@@ -1,26 +1,15 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* Mapeando a estrutura do seu print perfeitamente para o Tailwind v4 */
+  --color-brand-purple: #840ec9ff; /* O Roxo da logo do BoraMEI */
+  --color-brand-green: #00D37F;    /* O Verde Néon de destaque */
+  --color-brand-bgLight: #F9F9FA;  /* O fundo claro da página */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* É AQUI que o bgLight entra em ação! */
 body {
-  background: var(--background);
-  color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-brand-bgLight); /* Aplica a sua cor customizada no fundo do site todo */
+  color: #111827; /* Um cinza escuro/quase preto padrão para os textos ficarem legíveis */
 }

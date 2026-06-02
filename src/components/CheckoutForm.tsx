@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useState } from 'react';
+import Modal from './Modal';
 
 export default function CheckoutForm() {
   const searchParams = useSearchParams();
@@ -11,13 +12,19 @@ export default function CheckoutForm() {
   
   // Estados para controlar o método e as máscaras dos inputs
   const [metodoPagamento, setMetodoPagamento] = useState<'cartao' | 'pix'>('cartao');
+  const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [expiry, setExpiry] = useState('');
   const [cvv, setCvv] = useState('');
+  const [checkoutModal, setCheckoutModal] = useState<null | 'termos' | 'privacidade'>(null);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+
+  const closeCheckoutModal = () => setCheckoutModal(null);
 
   // 📝 MÁSCARA DO WHATSAPP: (11) 99999-9999
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.target.setCustomValidity(''); // Limpa o erro nativo ao digitar
     let v = e.target.value.replace(/\D/g, '');
     if (v.length > 11) v = v.slice(0, 11);
     if (v.length > 6) {
@@ -32,6 +39,7 @@ export default function CheckoutForm() {
 
   // 📝 MÁSCARA DO CARTÃO: 0000 0000 0000 0000
   const handleCardChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.target.setCustomValidity(''); // Limpa o erro nativo ao digitar
     let v = e.target.value.replace(/\D/g, '');
     if (v.length > 16) v = v.slice(0, 16);
     v = v.replace(/(\d{4})(?=\d)/g, '$1 ');
@@ -40,12 +48,58 @@ export default function CheckoutForm() {
 
   // 📝 MÁSCARA DA VALIDADE: MM/AA
   const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.target.setCustomValidity(''); // Limpa o erro nativo ao digitar
     let v = e.target.value.replace(/\D/g, '');
     if (v.length > 4) v = v.slice(0, 4);
     if (v.length > 2) {
       v = `${v.slice(0, 2)}/${v.slice(2)}`;
     }
     setExpiry(v);
+  };
+
+  // 🔥 VALIDAÇÃO COM BALÃO NATIVO DO NAVEGADOR
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+
+    // 1. Validação do WhatsApp (Exige exatamente 11 dígitos numéricos limpos)
+    const digitsPhone = phone.replace(/\D/g, '');
+    const phoneInput = form.elements.namedItem('phone') as HTMLInputElement;
+    if (digitsPhone.length !== 11) {
+      phoneInput.setCustomValidity("Por favor, insira o número de WhatsApp completo com 11 dígitos (DDD + 9 e o número).");
+      phoneInput.reportValidity(); // Dispara o balãozinho nativo no campo do WhatsApp
+      return;
+    }
+
+    // 2. Validações exclusivas para Cartão de Crédito
+    if (metodoPagamento === 'cartao') {
+      const digitsCard = cardNumber.replace(/\D/g, '');
+      const cardInput = form.elements.namedItem('cardNumber') as HTMLInputElement;
+      if (digitsCard.length < 16) {
+        cardInput.setCustomValidity("Número do cartão incompleto. Certifique-se de preencher os 16 dígitos.");
+        cardInput.reportValidity(); // Dispara o balãozinho nativo no número do cartão
+        return;
+      }
+
+      const digitsExpiry = expiry.replace(/\D/g, '');
+      const expiryInput = form.elements.namedItem('expiry') as HTMLInputElement;
+      if (digitsExpiry.length < 4) {
+        expiryInput.setCustomValidity("Data de validade incompleta. Preencha o mês e o ano (MM/AA).");
+        expiryInput.reportValidity(); // Dispara o balãozinho nativo na validade
+        return;
+      }
+
+      const digitsCvv = cvv.replace(/\D/g, '');
+      const cvvInput = form.elements.namedItem('cvv') as HTMLInputElement;
+      if (digitsCvv.length < 3) {
+        cvvInput.setCustomValidity("Código CVV incompleto. Insira os 3 ou 4 dígitos de segurança.");
+        cvvInput.reportValidity(); // Dispara o balãozinho nativo no CVV
+        return;
+      }
+    }
+
+    // Se passar em tudo com sucesso:
+    alert("Pronto! Enviando os dados para processamento...");
   };
 
   return (
@@ -58,7 +112,7 @@ export default function CheckoutForm() {
           <p className="text-gray-500 text-sm mt-1">Preencha com seus dados para ativar sua assinatura.</p>
         </div>
 
-        {/* 🎨 CORREÇÃO 1: Status das Abas com peso visual correto (Ativa vs Inativa) */}
+        {/* Status das Abas */}
         <div className="grid grid-cols-2 gap-4">
           <button
             type="button"
@@ -85,13 +139,20 @@ export default function CheckoutForm() {
         </div>
 
         {/* Formulário */}
-        <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+        <form className="space-y-4" onSubmit={handleSubmit}>
           
-          {/* 🎨 CORREÇÃO 2: Labels em Sentence Case (Sem gritar com o usuário) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Nome completo</label>
-              <input type="text" placeholder="João Silva" className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple outline-none text-sm" required />
+              <input 
+                type="text" 
+                name="name"
+                value={name}
+                onChange={(e) => { e.target.setCustomValidity(''); setName(e.target.value); }}
+                placeholder="João Silva" 
+                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple outline-none text-sm" 
+                required 
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp / Celular</label>
@@ -101,6 +162,7 @@ export default function CheckoutForm() {
                 </span>
                 <input 
                   type="tel" 
+                  name="phone"
                   value={phone}
                   onChange={handlePhoneChange}
                   placeholder="(11) 99999-9999" 
@@ -108,7 +170,6 @@ export default function CheckoutForm() {
                   required 
                 />
               </div>
-              {/* 🎨 CORREÇÃO 3: Micro-legenda explicativa para o WhatsApp */}
               <p className="text-xs text-gray-400 mt-1.5 pl-1">
                 Use o mesmo número onde deseja receber o assistente IA.
               </p>
@@ -121,6 +182,7 @@ export default function CheckoutForm() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Número do cartão</label>
                 <input 
                   type="text" 
+                  name="cardNumber"
                   value={cardNumber}
                   onChange={handleCardChange}
                   placeholder="0000 0000 0000 0000" 
@@ -133,6 +195,7 @@ export default function CheckoutForm() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Validade</label>
                   <input 
                     type="text" 
+                    name="expiry"
                     value={expiry}
                     onChange={handleExpiryChange}
                     placeholder="MM/AA" 
@@ -144,8 +207,9 @@ export default function CheckoutForm() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">CVV</label>
                   <input 
                     type="text" 
+                    name="cvv"
                     value={cvv}
-                    onChange={(e) => setCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                    onChange={(e) => { e.target.setCustomValidity(''); setCvv(e.target.value.replace(/\D/g, '').slice(0, 4)); }}
                     placeholder="123" 
                     className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple outline-none text-sm" 
                     required 
@@ -160,19 +224,80 @@ export default function CheckoutForm() {
             </div>
           )}
 
-          <button 
-            type="submit" 
-            className="w-full py-4 rounded-full bg-brand-green text-white text-lg font-bold hover:bg-opacity-90 shadow-lg shadow-green-100 transition-all active:scale-95 cursor-pointer mt-4 text-center block"
+          <div className="flex items-start space-x-3 my-6 p-1">
+            <div className="flex items-center h-5">
+              <input
+                id="aceita-termos"
+                name="aceita-termos"
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-[#A855F7] focus:ring-[#A855F7] transition-colors cursor-pointer"
+              />
+            </div>
+            <div className="text-sm leading-tight">
+              <label htmlFor="aceita-termos" className="text-gray-600 cursor-pointer select-none">
+                Li e aceito os{' '}
+                <button 
+                  type="button"
+                  onClick={() => setCheckoutModal('termos')}
+                  className="text-sm text-brand-purple hover:underline font-medium cursor-pointer transition-colors"
+                >
+                  Termos de Uso
+                </button>
+                {' '}e a{' '}
+                <button 
+                  type="button"
+                  onClick={() => setCheckoutModal('privacidade')}
+                  className="text-sm text-brand-purple hover:underline font-medium cursor-pointer transition-colors"
+                >
+                  Privacidade
+                </button>
+              </label>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={!acceptedTerms}
+            className={`w-full py-4 rounded-xl font-bold text-white text-base transition-all shadow-lg ${
+              acceptedTerms
+                ? 'bg-[#A855F7] hover:bg-opacity-90 cursor-pointer shadow-purple-200'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none'
+            }`}
           >
-            {metodoPagamento === 'cartao' ? 'Finalizar assinatura' : 'Gerar código PIX'}
+            Finalizar Assinatura
           </button>
+
+          <Modal isOpen={checkoutModal === 'termos'} onClose={closeCheckoutModal} title="Termos de Uso">
+            <p className="text-xs text-gray-400">Última atualização: Junho de 2026</p>
+            <p>Bem-vindo ao BoraMEI. Ao utilizar nossos serviços de assistência de Inteligência Artificial via WhatsApp, você concorda de forma integral com os presentes Termos de Uso.</p>
+            <h4 className="font-semibold text-gray-900 mt-4">1. Objeto do Serviço</h4>
+            <p>O BoraMEI oferece uma ferramenta de automação e consulta assistida baseada em IA para Microempreendedores Individuais (MEI), facilitando o acesso a guias DAS, declaração anual, consultas cadastrais e esclarecimento de dúvidas fiscais de rotina.</p>
+            <h4 className="font-semibold text-gray-900 mt-4">2. Responsabilidade pelos Dados do CNPJ</h4>
+            <p>Ao informar um CNPJ para consulta dentro do nosso sistema ou no chat de WhatsApp, você declara e garante que é o titular legítimo da empresa ou que possui autorização expressa do proprietário legal para gerenciar tais informações.</p>
+            <h4 className="font-semibold text-gray-900 mt-4">3. Limitação de Responsabilidade</h4>
+            <p>O BoraMEI atua como um facilitador de consultas a dados públicos. Não nos responsabilizamos por eventuais instabilidades nos sistemas do Governo Federal (Receita Federal, Simples Nacional) ou por atrasos no pagamento de guias fiscais por parte do usuário.</p>
+          </Modal>
+
+          <Modal isOpen={checkoutModal === 'privacidade'} onClose={closeCheckoutModal} title="Política de Privacidade">
+            <p className="text-xs text-gray-400">Última atualização: Junho de 2026</p>
+            <p>A sua privacidade é uma prioridade para o BoraMEI. Esta política descreve de forma transparente como coletamos, armazenamos e tratamos os seus dados em total conformidade com a LGPD.</p>
+            <h4 className="font-semibold text-gray-900 mt-4">1. Quais dados coletamos?</h4>
+            <p>
+              • <strong>Número de WhatsApp:</strong> Utilizado estritamente como canal de entrega do assistente de IA e envio de notificações importantes.<br />
+              • <strong>Número do CNPJ:</strong> Utilizado em tempo real para consultar a situação fiscal, gerar as guias DAS necessárias e fazer a declaração anual DASN.
+            </p>
+            <h4 className="font-semibold text-gray-900 mt-4">2. Compartilhamento de Dados</h4>
+            <p>Seus dados cadastrais corporativos são transmitidos de forma segura para nossa API parceira homologada (<strong>Infosimples</strong>) unicamente para realizar a busca automatizada nos órgãos governamentais. Nós <strong>nunca</strong> vendemos ou compartilhamos seus dados com terceiros para fins comerciais ou de publicidade.</p>
+            <h4 className="font-semibold text-gray-900 mt-4">3. Seus Direitos (LGPD)</h4>
+            <p>Você pode, a qualquer momento, solicitar a exclusão definitiva do seu número de telefone e dados de CNPJ da nossa base de dados entrando em contato direto através do nosso e-mail de suporte institucional.</p>
+          </Modal>
         </form>
       </div>
 
       {/* COLUNA DA DIREITA: Resumo */}
       <div className="bg-gray-900 text-white p-6 md:p-10 rounded-3xl shadow-xl md:col-span-5 space-y-8">
-        
-        {/* 🎨 CORREÇÃO 4: Mais "respiro" (margem) acima e abaixo da logo do branding */}
         <div className="py-2 border-b border-white/10 pb-6">
           <Link href="/">
             <img 
@@ -187,8 +312,6 @@ export default function CheckoutForm() {
             <p className="font-bold text-lg capitalize text-white leading-tight">Plano {plano}</p>
             <p className="text-sm text-gray-400 mt-1">Cobrança mensal</p>
           </div>
-          
-          {/* Adicionado whitespace-nowrap e flex-shrink-0 para blindar o preço contra quebras */}
           <div className="flex items-baseline gap-1 whitespace-nowrap flex-shrink-0 text-right">
             <span className="text-2xl font-extrabold text-brand-green">R$ {preco},00</span>
             <span className="text-xs text-gray-400">/mês</span>

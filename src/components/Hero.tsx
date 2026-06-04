@@ -35,7 +35,7 @@ export default function Hero({ onStartClick, onDemoClick }: HeroProps): React.JS
           
           {/* Descrição Comercial */}
           <p className="mt-6 text-base text-gray-600 sm:text-lg max-w-lg leading-relaxed">
-            Esqueça a burocracia. O BoraMEI emite suas guias DAS, envia alertas de vencimento automáticos e resolve suas dúvidas fiscais direto pelo chat, em segundos.
+            Esqueça a burocracia. O BoraMEI emite suas guias DAS, envia alertas de vencimento automáticos e resolve suas dúvidas fiscais direto pelo chat, em segundos. Ele veio para ser seu contador, assistente e consultor, tudo em um só lugar. Deixe a parte chata conosco e foque no que realmente importa: fazer seu negócio crescer.
           </p>
           
           {/* Ações / CTAs */}

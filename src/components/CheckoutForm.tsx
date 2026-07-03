@@ -20,6 +20,8 @@ export default function CheckoutForm() {
   const [name, setName] = useState('');
   const [cpf, setCpf] = useState('');
   const [phone, setPhone] = useState('');
+  const [cep, setCep] = useState(''); // 🔥 NOVO ESTADO: CEP
+  const [numero, setNumero] = useState(''); // 🔥 NOVO ESTADO: NÚMERO
   const [cardNumber, setCardNumber] = useState('');
   const [expiry, setExpiry] = useState('');
   const [cvv, setCvv] = useState('');
@@ -30,7 +32,7 @@ export default function CheckoutForm() {
 
   // 📝 MÁSCARA DO CPF: 000.000.000-00
   const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.target.setCustomValidity(''); // Limpa o erro nativo ao digitar
+    e.target.setCustomValidity(''); 
     let v = e.target.value.replace(/\D/g, '');
     if (v.length > 11) v = v.slice(0, 11);
     
@@ -60,6 +62,17 @@ export default function CheckoutForm() {
     setPhone(v);
   };
 
+  // 📝 MÁSCARA DO CEP: 00000-000 (🔥 NOVO)
+  const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.target.setCustomValidity('');
+    let v = e.target.value.replace(/\D/g, '');
+    if (v.length > 8) v = v.slice(0, 8);
+    if (v.length > 5) {
+      v = v.replace(/(\d{5})(\d{1,3})/, "$1-$2");
+    }
+    setCep(v);
+  };
+
   // 📝 MÁSCARA DO CARTÃO: 0000 0000 0000 0000
   const handleCardChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.target.setCustomValidity(''); 
@@ -85,7 +98,7 @@ export default function CheckoutForm() {
     e.preventDefault();
     const form = e.currentTarget;
 
-    // 1. Validação do CPF (Exige 11 dígitos numéricos)
+    // 1. Validação do CPF
     const digitsCpf = cpf.replace(/\D/g, '');
     const cpfInput = form.elements.namedItem('cpf') as HTMLInputElement;
     if (digitsCpf.length !== 11) {
@@ -94,7 +107,7 @@ export default function CheckoutForm() {
       return;
     }
 
-    // 2. Validação do WhatsApp (Exige exatamente 11 dígitos numéricos limpos)
+    // 2. Validação do WhatsApp
     const digitsPhone = phone.replace(/\D/g, '');
     const phoneInput = form.elements.namedItem('phone') as HTMLInputElement;
     if (digitsPhone.length !== 11) {
@@ -103,7 +116,16 @@ export default function CheckoutForm() {
       return;
     }
 
-    // 3. Validações exclusivas para Planos Pagos com Cartão de Crédito
+    // 3. Validação do CEP (🔥 NOVO)
+    const digitsCep = cep.replace(/\D/g, '');
+    const cepInput = form.elements.namedItem('cep') as HTMLInputElement;
+    if (digitsCep.length !== 8) {
+      cepInput.setCustomValidity("Por favor, insira um CEP válido com 8 dígitos.");
+      cepInput.reportValidity();
+      return;
+    }
+
+    // 4. Validações exclusivas para Planos Pagos com Cartão de Crédito
     if (!isGratis && metodoPagamento === 'cartao') {
       const digitsCard = cardNumber.replace(/\D/g, '');
       const cardInput = form.elements.namedItem('cardNumber') as HTMLInputElement;
@@ -198,7 +220,7 @@ export default function CheckoutForm() {
               />
             </div>
             
-            {/* CPF e WhatsApp lado a lado em ecrãs maiores */}
+            {/* CPF e WhatsApp lado a lado */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">CPF</label>
@@ -229,6 +251,35 @@ export default function CheckoutForm() {
                     required 
                   />
                 </div>
+              </div>
+            </div>
+
+            {/* CEP e Número de Residência (🔥 NOVO) */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">CEP</label>
+                <input 
+                  type="text" 
+                  name="cep"
+                  value={cep}
+                  onChange={handleCepChange}
+                  placeholder="00000-000" 
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple outline-none text-sm" 
+                  required 
+                />
+              </div>
+
+              <div className="col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Número</label>
+                <input 
+                  type="text" 
+                  name="numero"
+                  value={numero}
+                  onChange={(e) => setNumero(e.target.value.replace(/\D/g, ''))} // Apenas números
+                  placeholder="123" 
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple outline-none text-sm" 
+                  required 
+                />
               </div>
             </div>
           </div>

@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import Modal from '@/components/Modal'; // Garanta que o caminho do import está correto
+import TermosContent from '@/components/TermosContent';
+import PrivacidadeContent from '@/components/PrivacidadeContent';
 
 export default function Footer() {
   // Estado local para controlar os modais do rodapé
@@ -78,28 +80,11 @@ export default function Footer() {
       </footer>
       
       <Modal isOpen={activeModal === 'termos'} onClose={closeModal} title="Termos de Uso">
-        <p className="text-xs text-gray-400">Última atualização: Junho de 2026</p>
-        <p>Bem-vindo ao BoraMEI. Ao utilizar nossos serviços de assistência de Inteligência Artificial via WhatsApp, você concorda de forma integral com os presentes Termos de Uso.</p>
-        <h4 className="font-semibold text-gray-900 mt-4">1. Objeto do Serviço</h4>
-        <p>O BoraMEI oferece uma ferramenta de automação e consulta assistida baseada em IA para Microempreendedores Individuais (MEI), facilitando o acesso a guias DAS, declaração anual, consultas cadastrais e esclarecimento de dúvidas fiscais de rotina.</p>
-        <h4 className="font-semibold text-gray-900 mt-4">2. Responsabilidade pelos Dados do CNPJ</h4>
-        <p>Ao informar um CNPJ para consulta dentro do nosso sistema ou no chat de WhatsApp, você declara e garante que é o titular legítimo da empresa ou que possui autorização expressa do proprietário legal para gerenciar tais informações.</p>
-        <h4 className="font-semibold text-gray-900 mt-4">3. Limitação de Responsabilidade</h4>
-        <p>O BoraMEI atua como um facilitador de consultas a dados públicos. Não nos responsabilizamos por eventuais instabilidades nos sistemas do Governo Federal (Receita Federal, Simples Nacional) ou por atrasos no pagamento de guias fiscais por parte do usuário.</p>
+        <TermosContent />
       </Modal>
 
       <Modal isOpen={activeModal === 'privacidade'} onClose={closeModal} title="Política de Privacidade">
-        <p className="text-xs text-gray-400">Última atualização: Junho de 2026</p>
-        <p>A sua privacidade é uma prioridade para o BoraMEI. Esta política descreve de forma transparente como coletamos, armazenamos e tratamos os seus dados em total conformidade com a LGPD.</p>
-        <h4 className="font-semibold text-gray-900 mt-4">1. Quais dados coletamos?</h4>
-        <p>
-          • <strong>Número de WhatsApp:</strong> Utilizado estritamente como canal de entrega do assistente de IA e envio de notificações importantes.<br />
-          • <strong>Número do CNPJ:</strong> Utilizado em tempo real para consultar a situação fiscal, gerar as guias DAS necessárias e fazer a declaração anual DASN.
-        </p>
-        <h4 className="font-semibold text-gray-900 mt-4">2. Compartilhamento de Dados</h4>
-        <p>Seus dados cadastrais corporativos são transmitidos de forma segura para nossa API parceira homologada (<strong>Infosimples</strong>) unicamente para realizar a busca automatizada nos órgãos governamentais. Nós <strong>nunca</strong> vendemos ou compartilhamos seus dados com terceiros para fins comerciais ou de publicidade.</p>
-        <h4 className="font-semibold text-gray-900 mt-4">3. Seus Direitos (LGPD)</h4>
-        <p>Você pode, a qualquer momento, solicitar a exclusão definitiva do seu número de telefone e dados de CNPJ da nossa base de dados entrando em contato direto através do nosso e-mail de suporte institucional.</p>
+        <PrivacidadeContent />
       </Modal>
     </>
   );

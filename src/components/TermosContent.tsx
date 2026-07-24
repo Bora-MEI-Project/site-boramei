@@ -84,21 +84,27 @@ export default function TermosContent() {
 
       <SubSecao numero="4.2" titulo="Período de teste" />
       <p>
-        Podemos oferecer período de teste gratuito ou promocional. Ao fim do período, a assinatura passa a
-        ser cobrada automaticamente no valor vigente do plano, salvo cancelamento anterior. As condições e
-        a duração de cada oferta são informadas no momento da contratação.
+        Podemos oferecer período de teste gratuito ou promocional — atualmente de 90 (noventa) dias para
+        assinaturas pagas no cartão de crédito. Ao escolher cartão como forma de pagamento, a autorização
+        de cobrança é colhida já no momento do cadastro, mas nenhum valor é debitado durante o teste: a
+        primeira cobrança ocorre no <strong>91º dia</strong> contado da contratação, salvo cancelamento
+        anterior. As condições e a duração de cada oferta são informadas no momento da contratação.
       </p>
 
       <SubSecao numero="4.3" titulo="Renovação automática no cartão de crédito" />
       <div className="p-3 rounded-lg border border-amber-200 bg-amber-50 text-amber-900">
         <strong>Atenção:</strong> ao escolher cartão de crédito como forma de pagamento, você contrata uma{' '}
-        <strong>assinatura de cobrança recorrente mensal</strong>. O valor do plano será debitado
-        automaticamente no mesmo cartão, todo mês, sem necessidade de nova autorização, até que você
-        cancele.
+        <strong>assinatura de cobrança recorrente mensal</strong>. A autorização de cobrança é colhida uma
+        única vez, no cadastro; a partir daí, o valor do plano é debitado automaticamente no mesmo cartão,
+        todo mês — começando no dia 91 se você estiver em período de teste, ou imediatamente após a
+        confirmação do cadastro caso contrário — sem necessidade de nova autorização, até que você cancele.
       </div>
       <p>Ao concluir a compra com cartão, você declara estar ciente e de acordo com:</p>
       <ol className="list-decimal pl-5 space-y-1">
-        <li>a cobrança mensal automática, no valor vigente do plano;</li>
+        <li>
+          a coleta da autorização de cobrança no momento do cadastro, e a cobrança mensal automática
+          decorrente dela, no valor vigente do plano;
+        </li>
         <li>
           o armazenamento de um <strong>token do seu cartão</strong> junto ao PagBank, para viabilizar as
           cobranças seguintes – nunca o número completo, que não trafega nem é armazenado em nossos
@@ -108,7 +114,7 @@ export default function TermosContent() {
       </ol>
       <p>
         Enviaremos um comprovante por e-mail a cada cobrança realizada. Se você contratou um período de
-        teste, avisaremos por e-mail antes da primeira cobrança.
+        teste, avisaremos por e-mail antes da primeira cobrança, no 91º dia.
       </p>
       <p>
         <strong>Como cancelar:</strong> a qualquer momento, pelo painel do cliente ou pelo e-mail

@@ -11,6 +11,9 @@ import { processarCheckout, aguardarPagamento } from '@/lib/pagbank';
 
 const PIX_EXPIRACAO_PADRAO_SEGUNDOS = 20 * 60;
 
+const TURNSTILE_SITE_KEY =
+  process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '0x4AAAAAAD8KKEZx5RbTtcS4';
+
 /** Segundos restantes até a expiração real do Pix (devolvida pelo PagBank). */
 function segundosAteExpirar(expiraEm: string | null): number {
   if (!expiraEm) return PIX_EXPIRACAO_PADRAO_SEGUNDOS;
@@ -548,7 +551,7 @@ export default function CheckoutForm() {
               <div className="flex justify-center">
                 <Turnstile
                   ref={turnstileRef}
-                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+                  siteKey={TURNSTILE_SITE_KEY}
                   onSuccess={setTurnstileToken}
                   onExpire={() => setTurnstileToken(null)}
                   onError={() => setTurnstileToken(null)}
@@ -575,8 +578,8 @@ export default function CheckoutForm() {
               {/* Aviso de cobrança, visível no momento da compra */}
               <p className="text-xs text-gray-500 text-center">
                 {metodoPagamento === 'cartao'
-                  ? `Assinatura mensal de R$ ${precoExibicao}. Renovação automática no cartão. Cancele quando quiser.`
-                  : `Pagamento via PIX de R$ ${precoExibicao} referente ao ciclo atual. Sem renovação automática.`}
+                  ? `Teste grátis de 90 dias disponível apenas no cartão de crédito. Assinatura mensal de R$ ${precoExibicao}, com a primeira cobrança no dia 91 e renovação automática. Cancele quando quiser.`
+                  : `Pagamento via PIX de R$ ${precoExibicao} referente ao ciclo atual. Sem período de teste e sem renovação automática — vale só para este ciclo.`}
               </p>
 
               {/* Modais de Termos e Privacidade */}

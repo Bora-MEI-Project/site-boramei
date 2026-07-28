@@ -25,6 +25,7 @@ export interface ClienteData {
 
 export interface CartaoData {
   nome: string;
+  cpf: string;
   numero: string;
   validade: string;
   cvv: string;
@@ -44,6 +45,8 @@ export type CardStatus = 'aprovado' | 'recusado' | 'analise';
 export interface CheckoutResult {
   sucesso: boolean;
   mensagem?: string;
+  /** EMAIL_DUPLICADO, CPF_DUPLICADO, WHATSAPP_DUPLICADO, ou outro código vindo do n8n. */
+  codigo?: string;
   cardStatus?: CardStatus;
   pixData?: {
     orderId: string;
@@ -168,11 +171,13 @@ export async function processarCheckout({
   try {
     let cardToken = "";
     let titular = "";
+    let cpfTitular = "";
 
     if (metodo === 'cartao') {
       if (!cartao) throw new Error("Preencha os dados do cartão.");
       cardToken = await encryptCardData(cartao);
       titular = normalizarTitular(cartao.nome);
+      cpfTitular = cartao.cpf.replace(/\D/g, "");
     }
 
     const payload = {
@@ -190,9 +195,9 @@ export async function processarCheckout({
           numero: cliente.numero.trim()
         }
       },
-      // titular vai junto para que o body do n8n use o nome digitado
-      // no cartão, e não o nome do cadastro.
-      ...(metodo === 'cartao' && { cardToken, titular, idempotencyKey: obterChave() })
+      // titular e cpfTitular vão junto para que o body do n8n use os dados
+      // digitados no cartão, e não os dados do cadastro.
+      ...(metodo === 'cartao' && { cardToken, titular, cpfTitular, idempotencyKey: obterChave() })
     };
 
     const response = await fetch(URL_CHECKOUT, {
@@ -206,12 +211,22 @@ export async function processarCheckout({
     if (!response.ok) {
       return {
         sucesso: false,
+        codigo: data?.codigo,
         mensagem: data?.mensagem || "Não foi possível concluir o pagamento. Tente novamente."
       };
     }
 
     // --- PIX ---
     if (metodo === 'pix') {
+      // Cadastro duplicado (e-mail/CPF/WhatsApp) é rejeitado antes de gerar o Pix.
+      if (data?.sucesso === false) {
+        return {
+          sucesso: false,
+          codigo: data?.codigo,
+          mensagem: data?.mensagem || "Não foi possível concluir o cadastro. Tente novamente."
+        };
+      }
+
       const orderId: string = data?.id || '';
       const qr = data?.qr_codes?.[0];
       const copiaECola: string = qr?.text || '';
@@ -252,6 +267,7 @@ export async function processarCheckout({
       renovarChave();          // ← recusado: próxima é cobrança nova
       return {
         sucesso: false,
+        codigo: data?.codigo,
         cardStatus: 'recusado',
         mensagem: data?.mensagem || 'Pagamento não autorizado. Tente outro cartão.'
       };

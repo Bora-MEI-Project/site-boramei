@@ -49,6 +49,7 @@ export default function CheckoutForm() {
   const [cep, setCep] = useState(''); 
   const [numero, setNumero] = useState(''); 
   const [cardName, setCardName] = useState('');
+  const [cardCpf, setCardCpf] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [expiry, setExpiry] = useState('');
   const [cvv, setCvv] = useState('');
@@ -63,6 +64,7 @@ export default function CheckoutForm() {
   const [pagamentoConfirmado, setPagamentoConfirmado] = useState(false);
   const [pagamentoAnalise, setPagamentoAnalise] = useState(false);
   const [pagamentoErro, setPagamentoErro] = useState<string | null>(null);
+  const [erroCodigo, setErroCodigo] = useState<string | null>(null);
 
   // Verificação anti-robô (Cloudflare Turnstile)
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
@@ -119,14 +121,23 @@ export default function CheckoutForm() {
   };
 
   // 📝 MÁSCARAS
-  const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.target.setCustomValidity(''); 
-    let v = e.target.value.replace(/\D/g, '');
+  const formatarCpf = (raw: string) => {
+    let v = raw.replace(/\D/g, '');
     if (v.length > 11) v = v.slice(0, 11);
     if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
     else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3");
     else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, "$1.$2");
-    setCpf(v);
+    return v;
+  };
+
+  const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.target.setCustomValidity('');
+    setCpf(formatarCpf(e.target.value));
+  };
+
+  const handleCardCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.target.setCustomValidity('');
+    setCardCpf(formatarCpf(e.target.value));
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -191,6 +202,13 @@ export default function CheckoutForm() {
     }
 
     if (metodoPagamento === 'cartao') {
+      const digitsCardCpf = cardCpf.replace(/\D/g, '');
+      const cardCpfInput = form.elements.namedItem('cardCpf') as HTMLInputElement;
+      if (digitsCardCpf.length !== 11) {
+        cardCpfInput.setCustomValidity("Por favor, insira o CPF do titular do cartão, com 11 dígitos.");
+        cardCpfInput.reportValidity(); return;
+      }
+
       const digitsCard = cardNumber.replace(/\D/g, '');
       const cardInput = form.elements.namedItem('cardNumber') as HTMLInputElement;
       if (digitsCard.length < 16) {
@@ -221,6 +239,7 @@ export default function CheckoutForm() {
     // --- EXECUÇÃO DO CHECKOUT ---
     setIsLoading(true);
     setPagamentoErro(null);
+    setErroCodigo(null);
 
     const resultado = await processarCheckout({
       plano,
@@ -237,6 +256,7 @@ export default function CheckoutForm() {
       },
       cartao: metodoPagamento === 'cartao' ? {
         nome: cardName,
+        cpf: cardCpf,
         numero: cardNumber,
         validade: expiry,
         cvv
@@ -249,6 +269,7 @@ export default function CheckoutForm() {
       // Token do Turnstile é de uso único: renova o desafio para a próxima tentativa.
       turnstileRef.current?.reset();
       setTurnstileToken(null);
+      setErroCodigo(resultado.codigo ?? null);
       setPagamentoErro(resultado.mensagem || "Ocorreu um erro ao processar o pagamento. Tente novamente.");
       return;
     }
@@ -482,6 +503,15 @@ export default function CheckoutForm() {
                     />
                   </div>
                   <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">CPF do titular do cartão</label>
+                    <input
+                      type="text" name="cardCpf" value={cardCpf} onChange={handleCardCpfChange}
+                      placeholder="000.000.000-00"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple outline-none text-sm"
+                      required disabled={isLoading}
+                    />
+                  </div>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Número do cartão</label>
                     <input 
                       type="text" name="cardNumber" value={cardNumber} onChange={handleCardChange}
@@ -521,9 +551,22 @@ export default function CheckoutForm() {
 
               {/* Mensagem de erro / recusa do pagamento */}
               {pagamentoErro && (
-                <div className="p-4 rounded-xl border border-red-200 bg-red-50 text-sm text-red-700 flex items-start gap-2 mt-4">
-                  <span className="text-lg leading-none">⚠️</span>
-                  <p>{pagamentoErro}</p>
+                <div className="p-4 rounded-xl border border-red-200 bg-red-50 text-sm text-red-700 flex flex-col gap-2 mt-4">
+                  <div className="flex items-start gap-2">
+                    <span className="text-lg leading-none">⚠️</span>
+                    <p>{pagamentoErro}</p>
+                  </div>
+
+                  {(erroCodigo === 'EMAIL_DUPLICADO' ||
+                    erroCodigo === 'CPF_DUPLICADO' ||
+                    erroCodigo === 'WHATSAPP_DUPLICADO') && (
+                    <a
+                      href={`https://wa.me/558186195043?text=${encodeURIComponent("Olá, já tenho cadastro no BoraMEI e preciso de ajuda!")}`}
+                      className="self-start text-sm font-semibold text-brand-purple hover:underline"
+                    >
+                      Já tem conta? Fale com o suporte →
+                    </a>
+                  )}
                 </div>
               )}
 

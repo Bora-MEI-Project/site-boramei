@@ -33,11 +33,9 @@ function intervaloPixMs(decorridoMs: number): number {
 
 export default function CheckoutForm() {
   const searchParams = useSearchParams();
-  const plano = searchParams.get('plano') || 'profissional';
+  const plano = searchParams.get('plano') || 'basixo';
 
-  // Define o preço dinamicamente baseado no plano recebido (formato numérico, com ponto)
   const preco = plano === 'profissional' ? '39.00' : plano === 'basico' ? '9.90' : '19.00';
-  // Versão para exibição, no padrão brasileiro (vírgula)
   const precoExibicao = preco.replace('.', ',');
   
   // Estados do Formulário
@@ -243,7 +241,6 @@ export default function CheckoutForm() {
 
     const resultado = await processarCheckout({
       plano,
-      preco,
       metodo: metodoPagamento,
       turnstileToken,
       cliente: {

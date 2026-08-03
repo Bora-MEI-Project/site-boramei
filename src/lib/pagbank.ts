@@ -7,7 +7,7 @@ declare global {
 // --- CONFIGURAÇÃO ---
 // Troque por variáveis de ambiente antes de ir para produção.
 // A chave pública e a URL da API mudam entre sandbox e produção.
-const PUBLIC_KEY = `MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAr+ZqgD892U9/HXsa7XqBZUayPquAfh9xx4iwUbTSUAvTlmiXFQNTp0Bvt/5vK2FhMj39qSv1zi2OuBjvW38q1E374nzx6NNBL5JosV0+SDINTlCG0cmigHuBOyWzYmjgca+mtQu4WczCaApNaSuVqgb8u7Bd9GCOL4YJotvV5+81frlSwQXralhwRzGhj/A57CGPgGKiuPT+AOGmykIGEZsSD9RKkyoKIoc0OS8CPIzdBOtTQCIwrLn2FxI83Clcg55W8gkFSOS6rWNbG5qFZWMll6yl02HtunalHmUlRUL66YeGXdMDC2PuRcmZbGO5a/2tbVppW6mfSWG3NPRpgwIDAQAB`;
+const PUBLIC_KEY = process.env.PAGBANK_PUBLIC_KEY || `MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAr+ZqgD892U9/HXsa7XqBZUayPquAfh9xx4iwUbTSUAvTlmiXFQNTp0Bvt/5vK2FhMj39qSv1zi2OuBjvW38q1E374nzx6NNBL5JosV0+SDINTlCG0cmigHuBOyWzYmjgca+mtQu4WczCaApNaSuVqgb8u7Bd9GCOL4YJotvV5+81frlSwQXralhwRzGhj/A57CGPgGKiuPT+AOGmykIGEZsSD9RKkyoKIoc0OS8CPIzdBOtTQCIwrLn2FxI83Clcg55W8gkFSOS6rWNbG5qFZWMll6yl02HtunalHmUlRUL66YeGXdMDC2PuRcmZbGO5a/2tbVppW6mfSWG3NPRpgwIDAQAB`;
 
 const N8N_BASE = "https://n8n.boramei.cloud/webhook";
 const URL_CHECKOUT = `${N8N_BASE}/boramei-checkout`;
@@ -33,7 +33,6 @@ export interface CartaoData {
 
 export interface ProcessCheckoutParams {
   plano: string;
-  preco: string;
   metodo: 'cartao' | 'pix';
   cliente: ClienteData;
   cartao?: CartaoData;
@@ -162,7 +161,6 @@ async function encryptCardData(cartao: CartaoData): Promise<string> {
 // --- CHECKOUT ---
 export async function processarCheckout({
   plano,
-  preco,
   metodo,
   cliente,
   cartao,
@@ -182,7 +180,6 @@ export async function processarCheckout({
 
     const payload = {
       plano,
-      valor: preco,
       metodo,
       turnstileToken,
       cliente: {

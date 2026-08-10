@@ -46,6 +46,8 @@ export default function CheckoutForm() {
   const [phone, setPhone] = useState('');
   const [cep, setCep] = useState(''); 
   const [numero, setNumero] = useState(''); 
+  const [senha, setSenha] = useState('');
+  const [confirmarSenha, setConfirmarSenha] = useState('');
   const [cardName, setCardName] = useState('');
   const [cardCpf, setCardCpf] = useState('');
   const [cardNumber, setCardNumber] = useState('');
@@ -199,6 +201,18 @@ export default function CheckoutForm() {
       cepInput.reportValidity(); return;
     }
 
+    const senhaInput = form.elements.namedItem('senha') as HTMLInputElement;
+    if (senha.length < 8) {
+      senhaInput.setCustomValidity("A senha deve ter pelo menos 8 caracteres.");
+      senhaInput.reportValidity(); return;
+    }
+
+    const confirmarSenhaInput = form.elements.namedItem('confirmarSenha') as HTMLInputElement;
+    if (senha !== confirmarSenha) {
+      confirmarSenhaInput.setCustomValidity("As senhas não coincidem.");
+      confirmarSenhaInput.reportValidity(); return;
+    }
+
     if (metodoPagamento === 'cartao') {
       const digitsCardCpf = cardCpf.replace(/\D/g, '');
       const cardCpfInput = form.elements.namedItem('cardCpf') as HTMLInputElement;
@@ -243,6 +257,7 @@ export default function CheckoutForm() {
       plano,
       metodo: metodoPagamento,
       turnstileToken,
+      senha,
       cliente: {
         nome: name,
         email,
@@ -481,6 +496,31 @@ export default function CheckoutForm() {
                       placeholder="123" 
                       className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple outline-none text-sm" 
                       required disabled={isLoading}
+                    />
+                  </div>
+                </div>
+
+                {/* Senha de acesso à área do cliente */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Crie uma senha</label>
+                    <input
+                      type="password" name="senha" value={senha}
+                      onChange={(e) => { e.target.setCustomValidity(''); setSenha(e.target.value); }}
+                      placeholder="Mínimo de 8 caracteres"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple outline-none text-sm"
+                      required minLength={8} disabled={isLoading}
+                    />
+                    <p className="text-xs text-gray-400 mt-1">Você vai usar essa senha para entrar na área do cliente.</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Confirme a senha</label>
+                    <input
+                      type="password" name="confirmarSenha" value={confirmarSenha}
+                      onChange={(e) => { e.target.setCustomValidity(''); setConfirmarSenha(e.target.value); }}
+                      placeholder="Repita a senha"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple outline-none text-sm"
+                      required minLength={8} disabled={isLoading}
                     />
                   </div>
                 </div>

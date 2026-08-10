@@ -10,8 +10,11 @@ declare global {
 const PUBLIC_KEY = `MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAw6wDPz05WyzykEqQszzhVFR7o7WFwmOCiJLmNAPr4y2ab7stEe6H6OoRB1GUKAjIW0o/tgIcU25SpFdur6oU7TZKMUbv5vQB66FBcP80Tnbef5By+EQklqUUZYDt2iLYog+Y6RyxkvNHyPPgwJY26ZQed5zkVCcMbzDVMeg5nUtem0BpO0sV/01Zzg93V+Ak5qj10okW/4YXCaZd5g95w1kxSL64AK8LH1u+ewHzg5E+D4ScE9OCTaM+EAHjkZccJEPdxfqVcHzIIDEtvWpFmGZVgBRuMJ/h89j02kIoKj8RtkvX7GgqV9e3hEDs5twWkJzpk+9OIs7g34hd5LBACQIDAQAB`;
 
 const N8N_BASE = "https://n8n.boramei.cloud/webhook";
-const URL_CHECKOUT = `${N8N_BASE}/boramei-checkout`;
+/** URL real do n8n — usada só pela rota interna /api/checkout (server-side), nunca chamada direto do navegador. */
+export const URL_CHECKOUT = `${N8N_BASE}/boramei-checkout`;
 const URL_STATUS = `${N8N_BASE}/boramei-status-pedido`;
+/** O checkout do navegador fala com a nossa API route, que hasheia a senha antes de repassar ao n8n. */
+const URL_CHECKOUT_PROXY = "/api/checkout";
 
 // --- TIPAGENS ---
 export interface ClienteData {
@@ -35,6 +38,8 @@ export interface ProcessCheckoutParams {
   plano: string;
   metodo: 'cartao' | 'pix';
   cliente: ClienteData;
+  /** Senha definida pelo MEI no checkout, usada depois para entrar na área do cliente. */
+  senha: string;
   cartao?: CartaoData;
   turnstileToken?: string;
 }
@@ -163,6 +168,7 @@ export async function processarCheckout({
   plano,
   metodo,
   cliente,
+  senha,
   cartao,
   turnstileToken
 }: ProcessCheckoutParams): Promise<CheckoutResult> {
@@ -182,6 +188,7 @@ export async function processarCheckout({
       plano,
       metodo,
       turnstileToken,
+      senha,
       cliente: {
         nome: cliente.nome.trim(),
         email: cliente.email.trim(),
@@ -197,7 +204,7 @@ export async function processarCheckout({
       ...(metodo === 'cartao' && { cardToken, titular, cpfTitular, idempotencyKey: obterChave() })
     };
 
-    const response = await fetch(URL_CHECKOUT, {
+    const response = await fetch(URL_CHECKOUT_PROXY, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)

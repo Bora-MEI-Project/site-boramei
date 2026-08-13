@@ -36,8 +36,14 @@ export default function Navbar({ onSubscribeClick }: NavbarProps): React.JSX.Ele
           </a>
         </nav>
 
-        {/* Lado Direito: Botão CTA */}
-        <div className="flex items-center">
+        {/* Lado Direito: Botões */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.push('/login')}
+            className="text-brand-purple hover:bg-brand-purple/10 font-bold px-5 py-2.5 rounded-full transition-all duration-200 active:scale-95 cursor-pointer"
+          >
+            Área do Cliente
+          </button>
           <button
             onClick={() => router.push('/#planos')}
             className="bg-brand-purple hover:bg-opacity-90 text-white font-bold px-7 py-2.5 rounded-full transition-all duration-200 active:scale-95 shadow-md shadow-purple-100 cursor-pointer"

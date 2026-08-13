@@ -2,6 +2,7 @@
 # This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+<!-- END:nextjs-agent-rules -->
 
 # Diretrizes de Código para o BoraMEI
 
@@ -19,4 +20,3 @@ Você é um desenvolvedor sênior especialista em Next.js, TypeScript e Tailwind
 3. **Navegação:** Sempre use `import { useRouter } from 'next/navigation'` (nunca de 'next/router') e o componente `<Link href="...">` do `next/link`.
 4. **Imagens:** Use a tag `<img src="/nome.svg" />` apontando para a pasta `public/` para vetores simples, ou o componente `<Image />` do Next para fotos pesadas.
 5. **Botões:** Todo botão interativo deve ter a classe `cursor-pointer` e um feedback visual de clique (ex: `active:scale-95`).
-<!-- END:nextjs-agent-rules -->

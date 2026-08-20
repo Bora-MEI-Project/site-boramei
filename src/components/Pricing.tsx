@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Pricing() {
   const router = useRouter();
@@ -24,7 +24,7 @@ export default function Pricing() {
         {/* Container Principal */}
         <div className="flex items-center justify-center gap-2 mt-12">
           
-          {/* SETA ESQUERDA (Some apenas no LG) — sem uso enquanto houver só 1 plano ativo
+          {/* SETA ESQUERDA (Some apenas no LG) */}
           <button
             onClick={() => setActiveCard((prev) => Math.max(0, prev - 1))}
             disabled={activeCard === 0}
@@ -36,14 +36,15 @@ export default function Pricing() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
             </svg>
           </button>
-          */}
 
           {/* ÁREA DOS CARDS */}
           <div className="w-full max-w-sm lg:max-w-none overflow-hidden lg:overflow-visible pt-6 -mt-6">
             
             {/* TRILHO DA ANIMAÇÃO */}
             <div
-              className="flex transition-transform duration-500 ease-in-out lg:transform-none lg:justify-center lg:gap-8 translate-x-0"
+              className={`flex transition-transform duration-500 ease-in-out lg:transform-none lg:justify-center lg:gap-8 ${
+                activeCard === 0 ? "translate-x-0" : "-translate-x-full"
+              }`}
             >
 
               {/* CARD 0: BÁSICO */}
@@ -80,7 +81,7 @@ export default function Pricing() {
                   </ul>
 
                   <button
-                    onClick={() => router.push('/checkout?plano=basico')}
+                    onClick={() => router.push("/checkout?plano=basico")}
                     className="w-full py-4 rounded-full border-2 border-gray-400 text-gray-700 text-lg font-bold hover:bg-gray-100 transition-all active:scale-95 cursor-pointer mt-auto"
                   >
                     Assinar Básico
@@ -88,13 +89,13 @@ export default function Pricing() {
                 </div>
               </div>
 
-              {/* CARD 1: ESSENCIAL
+              {/* CARD 1: ESSENCIAL */}
               <div className="w-full shrink-0 lg:w-[350px] px-2 lg:px-0">
                 <div className="flex flex-col h-[480px] p-8 rounded-3xl border-2 border-brand-green bg-white text-center">
                   <h3 className="text-3xl font-bold text-gray-900 mb-2">Essencial</h3>
                   <div className="flex items-baseline justify-center gap-1 mb-8">
                     <span className="text-3xl font-bold text-gray-900">R$</span>
-                    <span className="text-6xl font-extrabold text-gray-900">19</span>
+                    <span className="text-6xl font-extrabold text-gray-900">29,99</span>
                     <span className="text-gray-500 font-medium">/mês</span>
                   </div>
 
@@ -121,7 +122,6 @@ export default function Pricing() {
                   </button>
                 </div>
               </div>
-              */}
 
               {/* CARD 2: PROFISSIONAL
               <div className="w-full shrink-0 lg:w-[350px] px-2 lg:px-0">
@@ -165,19 +165,18 @@ export default function Pricing() {
             </div>
           </div>
 
-          {/* SETA DIREITA (Some apenas no LG) — sem uso enquanto houver só 1 plano ativo
+          {/* SETA DIREITA (Some apenas no LG) */}
           <button
-            onClick={() => setActiveCard((prev) => Math.min(0, prev + 1))}
-            disabled={activeCard === 0}
+            onClick={() => setActiveCard((prev) => Math.min(1, prev + 1))}
+            disabled={activeCard === 1}
             className={`lg:hidden p-2 rounded-full bg-gray-100 text-brand-purple transition-all z-10 ${
-              activeCard === 0 ? 'opacity-30 cursor-not-allowed' : 'active:scale-90 cursor-pointer hover:bg-gray-200'
+              activeCard === 1 ? 'opacity-30 cursor-not-allowed' : 'active:scale-90 cursor-pointer hover:bg-gray-200'
             }`}
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6">
               <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
             </svg>
           </button>
-          */}
 
         </div>
       </div>

@@ -10,6 +10,7 @@ import {
   Trash2,
   TrendingUp,
 } from "lucide-react";
+import FinanceiroTabs from "@/components/FinanceiroTabs";
 
 // ─────────────────────────────────────────────────────────────
 // BoraMEI — Gestor Financeiro / Fluxo de Caixa
@@ -195,23 +196,22 @@ export default function FinanceiroPage() {
 
   if (carregando) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-brand-bgLight text-sm text-neutral-500">
+      <div className="flex min-h-screen items-center justify-center text-sm text-gray-500">
         Carregando...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-brand-bgLight text-[#111827]">
-      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
-        {/* Cabeçalho */}
+    <div className="mx-auto max-w-3xl px-4 pb-8 pt-20 sm:px-6 sm:pb-10 md:pt-10">
+      {/* Cabeçalho */}
         <header className="mb-8 flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-purple">
             <Wallet className="h-6 w-6 text-white" strokeWidth={2.2} />
           </div>
           <div>
             <h1 className="text-xl font-bold tracking-tight">Fluxo de caixa</h1>
-            <p className="text-sm text-neutral-500">
+            <p className="text-sm text-gray-500">
               {periodo ? formatarMesAno(periodo.inicio) : ""}
             </p>
           </div>
@@ -220,6 +220,8 @@ export default function FinanceiroPage() {
             BoraMEI
           </span>
         </header>
+
+        <FinanceiroTabs />
 
         {/* Cards de resumo */}
         <section className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -234,7 +236,7 @@ export default function FinanceiroPage() {
             titulo="Saídas"
             valor={totais.saidas}
             icone={<ArrowDownRight className="h-5 w-5" />}
-            className="bg-white border border-neutral-200 text-neutral-600"
+            className="bg-white border border-gray-200 text-gray-600"
             valorClass="text-[#111827]"
           />
           <ResumoCard
@@ -247,7 +249,7 @@ export default function FinanceiroPage() {
         </section>
 
         {/* Novo lançamento */}
-        <section className="mb-8 rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
+        <section className="mb-8 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
           <h2 className="mb-4 text-sm font-semibold text-[#111827]">
             Novo lançamento
           </h2>
@@ -259,7 +261,7 @@ export default function FinanceiroPage() {
                 onChange={(e) => setDesc(e.target.value)}
                 onKeyDown={onKeyDown}
                 placeholder="Venda de serviço"
-                className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm outline-none transition focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/20"
+                className="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none transition focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/20"
               />
             </Campo>
 
@@ -272,7 +274,7 @@ export default function FinanceiroPage() {
                 onChange={(e) => setValor(e.target.value)}
                 onKeyDown={onKeyDown}
                 placeholder="0,00"
-                className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm outline-none transition focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/20"
+                className="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none transition focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/20"
               />
             </Campo>
 
@@ -280,7 +282,7 @@ export default function FinanceiroPage() {
               <select
                 value={categoriaId ?? ""}
                 onChange={(e) => setCategoriaId(Number(e.target.value))}
-                className="h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/20"
+                className="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none transition focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/20"
               >
                 {gruposOrdenados.map(({ grupo, categorias: cats }) => (
                   <optgroup key={grupo} label={grupo}>
@@ -311,7 +313,7 @@ export default function FinanceiroPage() {
         <section>
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-neutral-200 text-left text-xs uppercase tracking-wide text-neutral-400">
+              <tr className="border-b border-gray-200 text-left text-xs uppercase tracking-wide text-gray-400">
                 <th className="py-2.5 pr-2 font-semibold">Data</th>
                 <th className="py-2.5 pr-2 font-semibold">Descrição</th>
                 <th className="py-2.5 pr-2 font-semibold">Categoria</th>
@@ -325,13 +327,13 @@ export default function FinanceiroPage() {
                 return (
                   <tr
                     key={it.id}
-                    className="border-b border-neutral-100 last:border-0"
+                    className="border-b border-gray-100 last:border-0"
                   >
-                    <td className="py-3 pr-2 text-neutral-400">
+                    <td className="py-3 pr-2 text-gray-400">
                       {formatarDataCurta(it.data)}
                     </td>
                     <td className="py-3 pr-2 text-[#111827]">{it.descricao}</td>
-                    <td className="py-3 pr-2 text-neutral-500">
+                    <td className="py-3 pr-2 text-gray-500">
                       {it.categoriaNome}
                     </td>
                     <td
@@ -346,7 +348,7 @@ export default function FinanceiroPage() {
                         type="button"
                         onClick={() => remover(it.id)}
                         aria-label="Remover lançamento"
-                        className="cursor-pointer rounded-md p-1 text-neutral-300 transition hover:bg-neutral-100 hover:text-red-500 active:scale-95"
+                        className="cursor-pointer rounded-md p-1 text-gray-300 transition hover:bg-gray-100 hover:text-red-500 active:scale-95"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -358,7 +360,7 @@ export default function FinanceiroPage() {
                 <tr>
                   <td
                     colSpan={5}
-                    className="py-10 text-center text-sm text-neutral-400"
+                    className="py-10 text-center text-sm text-gray-400"
                   >
                     Nenhum lançamento ainda. Adicione o primeiro acima.
                   </td>
@@ -367,7 +369,6 @@ export default function FinanceiroPage() {
             </tbody>
           </table>
         </section>
-      </div>
     </div>
   );
 }
@@ -408,7 +409,7 @@ interface CampoProps {
 function Campo({ label, children }: CampoProps) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-medium text-neutral-500">
+      <span className="mb-1 block text-xs font-medium text-gray-500">
         {label}
       </span>
       {children}

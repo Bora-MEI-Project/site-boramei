@@ -1,3 +1,5 @@
+import type { PlanoId } from "./planos";
+
 declare global {
   interface Window {
     PagSeguro?: any;
@@ -22,6 +24,8 @@ export interface ClienteData {
   email: string;
   cpf: string;
   whatsapp: string;
+  /** Opcional: preenchido só quando o MEI já está aberto. */
+  cnpj?: string;
   cep: string;
   numero: string;
 }
@@ -35,7 +39,7 @@ export interface CartaoData {
 }
 
 export interface ProcessCheckoutParams {
-  plano: string;
+  plano: PlanoId;
   metodo: 'cartao' | 'pix';
   cliente: ClienteData;
   /** Senha definida pelo MEI no checkout, usada depois para entrar na área do cliente. */
@@ -194,6 +198,7 @@ export async function processarCheckout({
         email: cliente.email.trim(),
         cpf: cliente.cpf.replace(/\D/g, ""),
         whatsapp: cliente.whatsapp.replace(/\D/g, ""),
+        cnpj: cliente.cnpj ? cliente.cnpj.replace(/\D/g, "") : "",
         endereco: {
           cep: cliente.cep.replace(/\D/g, ""),
           numero: cliente.numero.trim()

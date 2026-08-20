@@ -57,20 +57,20 @@ export default function PrivacidadeContent() {
 
       <SubSecao numero="1.1" titulo="Fornecidos por você" />
       <Tabela
-        cabecalho={['Dado', 'Finalidade']}
+        cabecalho={["Dado", "Finalidade"]}
         linhas={[
-          ['Nome completo', 'Identificação e emissão de cobrança'],
-          ['CPF', 'Identificação, cobrança e consulta de dados fiscais'],
-          ['E-mail', 'Autenticação, comunicação e envio de comprovantes'],
-          ['Telefone / WhatsApp', 'Notificações de vencimento e atendimento'],
-          ['CEP e número do endereço', 'Cadastro e requisitos do processador de pagamento'],
+          ["Nome completo", "Identificação e emissão de cobrança"],
+          ["CPF", "Identificação, cobrança e consulta de dados fiscais"],
+          ["E-mail", "Autenticação, comunicação e envio de comprovantes"],
+          ["Telefone / WhatsApp", "Notificações de vencimento e atendimento"],
+          ["CEP e número do endereço", "Cadastro e requisitos do processador de pagamento"],
         ]}
       />
 
       <SubSecao numero="1.2" titulo="Dados de pagamento" />
       <p>
         Os dados do cartão são criptografados <strong>no seu navegador</strong>, pelo SDK do PagBank, antes
-        de qualquer envio. O número completo do cartão, o CVV e a validade{' '}
+        de qualquer envio. O número completo do cartão, o CVV e a validade{" "}
         <strong>não trafegam pelos nossos servidores e não são armazenados por nós</strong>.
       </p>
       <p>Armazenamos apenas:</p>
@@ -99,14 +99,14 @@ export default function PrivacidadeContent() {
 
       <Secao numero="2" titulo="Bases legais" />
       <Tabela
-        cabecalho={['Tratamento', 'Base legal (LGPD)']}
+        cabecalho={["Tratamento", "Base legal (LGPD)"]}
         linhas={[
-          ['Execução dos serviços contratados', 'Execução de contrato – art. 7º, V'],
-          ['Consulta a dados fiscais em seu nome', 'Consentimento – art. 7º, I'],
-          ['Armazenamento do token do cartão', 'Consentimento – art. 7º, I'],
-          ['Cobrança e prevenção a fraude', 'Legítimo interesse – art. 7º, IX'],
-          ['Guarda de registros de acesso', 'Obrigação legal – art. 7º, II'],
-          ['Comunicações de marketing', 'Consentimento – art. 7º, I'],
+          ["Execução dos serviços contratados", "Execução de contrato – art. 7º, V"],
+          ["Consulta a dados fiscais em seu nome", "Consentimento – art. 7º, I"],
+          ["Armazenamento do token do cartão", "Consentimento – art. 7º, I"],
+          ["Cobrança e prevenção a fraude", "Legítimo interesse – art. 7º, IX"],
+          ["Guarda de registros de acesso", "Obrigação legal – art. 7º, II"],
+          ["Comunicações de marketing", "Consentimento – art. 7º, I"],
         ]}
       />
       <p>
@@ -144,12 +144,12 @@ export default function PrivacidadeContent() {
 
       <Secao numero="5" titulo="Com quem compartilhamos" />
       <Tabela
-        cabecalho={['Terceiro', 'Papel', 'O que recebe']}
+        cabecalho={["Terceiro", "Papel", "O que recebe"]}
         linhas={[
-          ['PagBank', 'Processamento de pagamentos', 'Nome, CPF, e-mail, telefone, endereço parcial, dados de cartão criptografados'],
-          ['Infosimples', 'Consulta a sistemas públicos', 'CPF e CNPJ'],
-          ['Google (Gemini)', 'Geração de conteúdo por IA', 'Contexto da consulta e dados fiscais pertinentes'],
-          ['Provedores de infraestrutura', 'Hospedagem e automação', 'Dados armazenados na plataforma'],
+          ["PagBank", "Processamento de pagamentos", "Nome, CPF, e-mail, telefone, endereço parcial, dados de cartão criptografados"],
+          ["Infosimples", "Consulta a sistemas públicos", "CPF e CNPJ"],
+          ["Google (Gemini)", "Geração de conteúdo por IA", "Contexto da consulta e dados fiscais pertinentes"],
+          ["Provedores de infraestrutura", "Hospedagem e automação", "Dados armazenados na plataforma"],
         ]}
       />
       <p>
@@ -165,12 +165,12 @@ export default function PrivacidadeContent() {
 
       <Secao numero="7" titulo="Retenção" />
       <Tabela
-        cabecalho={['Dado', 'Prazo']}
+        cabecalho={["Dado", "Prazo"]}
         linhas={[
-          ['Cadastro e conta', 'Enquanto a conta estiver ativa'],
-          ['Registros de acesso', '6 meses (art. 15, Marco Civil)'],
-          ['Dados fiscais e financeiros', '5 anos após o encerramento, por obrigação legal e defesa em eventual litígio'],
-          ['Token do cartão', 'Até a revogação do consentimento ou o cancelamento da assinatura'],
+          ["Cadastro e conta", "Enquanto a conta estiver ativa"],
+          ["Registros de acesso", "6 meses (art. 15, Marco Civil)"],
+          ["Dados fiscais e financeiros", "5 anos após o encerramento, por obrigação legal e defesa em eventual litígio"],
+          ["Token do cartão", "Até a revogação do consentimento ou o cancelamento da assinatura"],
         ]}
       />
       <p>Encerrado o prazo, os dados são eliminados ou anonimizados.</p>

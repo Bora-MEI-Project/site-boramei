@@ -1,6 +1,6 @@
-# API — Gestor de Fluxo de Caixa (`/api/categorias`, `/api/lancamentos`)
+# API — Gestor de Fluxo de Caixa (`/api/categorias`, `/api/lancamentos`, `/api/dre`)
 
-Rotas internas consumidas por [src/app/user/page.tsx](../src/app/user/page.tsx) (rota `/user`, componente `FinanceiroPage`) para o gestor financeiro do MEI. Todas exigem sessão válida (cookie `bora_session`, ver [src/lib/auth.ts](../src/lib/auth.ts)) e filtram os dados pelo `usuario_id` extraído do JWT — nunca aceitam `usuario_id` vindo do cliente.
+Rotas internas consumidas por [src/app/financeiro/page.tsx](../src/app/financeiro/page.tsx) (rota `/financeiro`, aba "Fluxo de Caixa") e por [src/app/financeiro/dre/page.tsx](../src/app/financeiro/dre/page.tsx) (rota `/financeiro/dre`, aba "DRE Gerencial") para o gestor financeiro do MEI. Todas exigem sessão válida (cookie `bora_session`, ver [src/lib/auth.ts](../src/lib/auth.ts)) e filtram os dados pelo `usuario_id` extraído do JWT — nunca aceitam `usuario_id` vindo do cliente.
 
 Schema: `bora_mei_core` (Postgres). Tabelas: `categorias_financeiras` (já populada), `lancamentos`.
 
@@ -191,6 +191,77 @@ Por design, tentar deletar o lançamento de outro usuário devolve **404** (nunc
 
 ---
 
+## `GET /api/dre`
+
+Monta a Demonstração de Resultado do Exercício (DRE) do usuário logado, agrupando os lançamentos pelo `grupo` de `categorias_financeiras` (não pelo campo `conta_dre`, que está preenchido só em parte das categorias — ver comentário no início de [route.ts](../src/app/api/dre/route.ts)). Devolve o bloco calculado tanto para o mês selecionado quanto para o ano inteiro, lado a lado.
+
+### Query params (opcionais)
+
+| Param | Formato | Default |
+|---|---|---|
+| `ano` | inteiro (2000–2100) | ano atual |
+| `mes` | inteiro (1–12) | mês atual |
+
+Um valor fora da faixa é ignorado silenciosamente e o default é usado no lugar — não gera erro 400.
+
+**Exemplo:** `GET /api/dre?ano=2026&mes=8`
+
+### Resposta — 200
+
+```json
+{
+  "periodo": { "ano": 2026, "mes": 8, "mesLabel": "Agosto de 2026" },
+  "mensal": {
+    "receitaBruta": 500,
+    "receitas": [
+      { "label": "Receita de Vendas e Serviços", "valor": 500, "avPercent": 100 },
+      { "label": "Outras Receitas Operacionais", "valor": 0, "avPercent": 0 }
+    ],
+    "deducoes": [
+      { "label": "Devoluções de Vendas", "valor": 0, "avPercent": 0 },
+      { "label": "Impostos sobre a Receita (DAS)", "valor": 0, "avPercent": 0 }
+    ],
+    "totalDeducoes": 0,
+    "receitaLiquida": 500,
+    "custos": [{ "label": "Custo de Mercadorias/Serviços Vendidos", "valor": 0, "avPercent": 0 }],
+    "totalCustos": 0,
+    "lucroBruto": 500,
+    "margemBruta": 100,
+    "despesas": [
+      { "label": "Despesas com Pessoal", "valor": 0, "avPercent": 0 },
+      { "label": "Despesas Administrativas", "valor": 120, "avPercent": 24 },
+      { "label": "Despesas Comerciais e Marketing", "valor": 0, "avPercent": 0 },
+      { "label": "Outros Tributos", "valor": 0, "avPercent": 0 },
+      { "label": "Outras Despesas Operacionais", "valor": 0, "avPercent": 0 }
+    ],
+    "totalDespesas": 120,
+    "resultadoOperacional": 380,
+    "receitasFinanceiras": 0,
+    "despesasFinanceiras": 0,
+    "investimentos": 0,
+    "resultadoLiquido": 380
+  },
+  "anual": { "...": "mesmo shape do bloco mensal, somando o ano inteiro (Jan–Dez)" }
+}
+```
+
+| Campo | Descrição |
+|---|---|
+| `receitaBruta` | soma de `Receitas Diretas` + `Outras Entradas` (grupos de `categorias_financeiras`) |
+| `avPercent` | percentual da linha sobre `receitaBruta` do mesmo bloco (0 se `receitaBruta` for 0) |
+| `margemBruta` | `lucroBruto / receitaLiquida * 100` (0 se `receitaLiquida` for 0) |
+| `resultadoLiquido` | `resultadoOperacional + receitasFinanceiras − despesasFinanceiras − investimentos` |
+
+Sem lançamentos no período → todos os totais vêm `0` e os arrays de linha vêm com `valor: 0` (nunca array vazio nem `null`).
+
+### Erros
+
+| Status | Corpo | Quando |
+|---|---|---|
+| 401 | `{ "mensagem": "Não autenticado." }` | sem cookie de sessão válido |
+
+---
+
 ## Referência rápida
 
 | Rota | Método | Auth | Sucesso | Erros possíveis |
@@ -199,3 +270,4 @@ Por design, tentar deletar o lançamento de outro usuário devolve **404** (nunc
 | `/api/lancamentos` | GET | sessão | 200 | 401 |
 | `/api/lancamentos` | POST | sessão | 201 | 400, 401 |
 | `/api/lancamentos/[id]` | DELETE | sessão | 200 | 401, 404 |
+| `/api/dre` | GET | sessão | 200 | 401 |

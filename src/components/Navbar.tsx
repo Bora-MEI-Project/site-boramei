@@ -1,23 +1,17 @@
-"use client"; // Não esqueça de garantir que essa linha esteja no topo!
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-
-
+import { useRouter } from "next/navigation";
 
 interface NavbarProps {
   onSubscribeClick?: () => void;
 }
 
-export default function Navbar({ onSubscribeClick }: NavbarProps): React.JSX.Element {
-  
+export default function Navbar({ onSubscribeClick }: NavbarProps) {
   const router = useRouter();
-  
+
   return (
     <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        
         {/* Lado Esquerdo: Logo */}
         <div className="flex items-center">
           <img src="/logo-com-nome.svg" className="h-12 w-auto text-brand-purple" />
@@ -39,19 +33,18 @@ export default function Navbar({ onSubscribeClick }: NavbarProps): React.JSX.Ele
         {/* Lado Direito: Botões */}
         <div className="flex items-center gap-3">
           <button
-            onClick={() => router.push('/login')}
+            onClick={() => router.push("/login")}
             className="text-brand-purple hover:bg-brand-purple/10 font-bold px-5 py-2.5 rounded-full transition-all duration-200 active:scale-95 cursor-pointer"
           >
             Área do Cliente
           </button>
           <button
-            onClick={() => router.push('/#planos')}
+            onClick={() => router.push("/#planos")}
             className="bg-brand-purple hover:bg-opacity-90 text-white font-bold px-7 py-2.5 rounded-full transition-all duration-200 active:scale-95 shadow-md shadow-purple-100 cursor-pointer"
           >
             Assinar Agora
           </button>
         </div>
-
       </div>
     </header>
   );

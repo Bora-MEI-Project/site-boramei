@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { ReactNode } from 'react';
+import { ReactNode } from "react";
 
 interface ModalProps {
   isOpen: boolean;
@@ -20,11 +20,11 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
       <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] flex flex-col shadow-2xl overflow-hidden border border-gray-100">
         
         {/* Cabeçalho */}
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-brand-bgLight">
           <h3 className="text-xl font-bold text-gray-900">{title}</h3>
-          <button 
+          <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl font-semibold w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors cursor-pointer"
+            className="text-gray-400 hover:text-gray-600 text-2xl font-semibold w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors cursor-pointer active:scale-95"
           >
             ×
           </button>
@@ -36,10 +36,10 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
         </div>
 
         {/* Rodapé do Modal */}
-        <div className="p-4 border-t border-gray-100 flex justify-end bg-gray-50">
-          <button 
+        <div className="p-4 border-t border-gray-100 flex justify-end bg-brand-bgLight">
+          <button
             onClick={onClose}
-            className="px-5 py-2 bg-[#A855F7] text-white rounded-xl text-sm font-medium hover:bg-opacity-90 transition-opacity cursor-pointer"
+            className="px-5 py-2 bg-brand-purple text-white rounded-xl text-sm font-medium hover:bg-opacity-90 transition-opacity cursor-pointer active:scale-95"
           >
             Entendi e fechar
           </button>

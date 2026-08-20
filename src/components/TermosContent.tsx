@@ -93,7 +93,7 @@ export default function TermosContent() {
 
       <SubSecao numero="4.3" titulo="Renovação automática no cartão de crédito" />
       <div className="p-3 rounded-lg border border-amber-200 bg-amber-50 text-amber-900">
-        <strong>Atenção:</strong> ao escolher cartão de crédito como forma de pagamento, você contrata uma{' '}
+        <strong>Atenção:</strong> ao escolher cartão de crédito como forma de pagamento, você contrata uma{" "}
         <strong>assinatura de cobrança recorrente mensal</strong>. A autorização de cobrança é colhida uma
         única vez, no cadastro; a partir daí, o valor do plano é debitado automaticamente no mesmo cartão,
         todo mês — começando no dia 91 se você estiver em período de teste, ou imediatamente após a
@@ -133,7 +133,7 @@ export default function TermosContent() {
 
       <SubSecao numero="5.1" titulo="Direito de arrependimento" />
       <p>
-        Nos termos do art. 49 do Código de Defesa do Consumidor, você pode desistir da contratação em até{' '}
+        Nos termos do art. 49 do Código de Defesa do Consumidor, você pode desistir da contratação em até{" "}
         <strong>7 (sete) dias corridos</strong> contados da compra, com devolução integral do valor pago.
       </p>
 

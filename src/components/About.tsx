@@ -1,5 +1,3 @@
-
-
 export default function About() {
   return (
     <section id="sobre" className="bg-white py-24 px-6 border-t border-gray-100">
@@ -43,7 +41,7 @@ export default function About() {
         <div className="relative flex justify-center">
           
           {/* Card Flutuante Estilizado */}
-          <div className="bg-gray-50 border border-gray-200/60 p-8 rounded-3xl shadow-xl max-w-md relative z-10">
+          <div className="bg-brand-bgLight border border-gray-200/60 p-8 rounded-3xl shadow-xl max-w-md relative z-10">
             {/* Detalhe de três pontinhos simulando uma janela de app */}
             <div className="flex items-center gap-2 mb-6">
               <div className="w-3 h-3 rounded-full bg-red-400/80"></div>
@@ -61,10 +59,10 @@ export default function About() {
               {/* Novo contêiner circular com a bordinha verde */}
               <div className="h-16 w-16 rounded-full border-2 border-brand-green bg-white flex items-center justify-center p-3 shadow-inner">
                 {/* A logo real, ajustada para caber no contêiner sem distorção */}
-                <img 
-                  src="/logo-bm.svg" // Certifique-se de que a Logo.svg está dentro da pasta public
-                  alt="Logo BoraMEI" 
-                  className="h-full w-auto object-contain" 
+                <img
+                  src="/logo-bm.svg"
+                  alt="Logo BoraMEI"
+                  className="h-full w-auto object-contain"
                 />
               </div>
               

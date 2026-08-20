@@ -1,12 +1,9 @@
-import React from 'react';
-
-// 1. Definição estrita das propriedades do componente (TypeScript)
 interface HeroProps {
   onStartClick?: () => void;
   onDemoClick?: () => void;
 }
 
-export default function Hero({ onStartClick, onDemoClick }: HeroProps): React.JSX.Element {
+export default function Hero({ onStartClick, onDemoClick }: HeroProps) {
   return (
     <section className="relative overflow-hidden bg-brand-bgLight px-6 pt-2 pb-12 md:pt-2 pb-16">
       {/* Detalhe sutil de fundo para dar profundidade de design */}

@@ -1,19 +1,18 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Modal from '@/components/Modal'; // Garanta que o caminho do import está correto
-import TermosContent from '@/components/TermosContent';
-import PrivacidadeContent from '@/components/PrivacidadeContent';
+import { useState } from "react";
+import Modal from "@/components/Modal";
+import TermosContent from "@/components/TermosContent";
+import PrivacidadeContent from "@/components/PrivacidadeContent";
 
 export default function Footer() {
-  // Estado local para controlar os modais do rodapé
-  const [activeModal, setActiveModal] = useState<'termos' | 'privacidade' | null>(null);
+  const [activeModal, setActiveModal] = useState<"termos" | "privacidade" | null>(null);
 
   const closeModal = () => setActiveModal(null);
 
   return (
     <>
-      <footer className="bg-gray-50 border-t border-gray-100 py-16 px-6 mt-20">
+      <footer className="bg-brand-bgLight border-t border-gray-100 py-16 px-6 mt-20">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-8">
           
           {/* Coluna da Esquerda: Logo e Copyright */}
@@ -55,19 +54,19 @@ export default function Footer() {
               <h4 className="text-sm font-bold text-gray-900 mb-4">Legal</h4>
               <ul className="space-y-3">
                 <li>
-                  <button 
+                  <button
                     type="button"
-                    onClick={() => setActiveModal('termos')}
-                    className="text-sm text-gray-500 hover:text-brand-purple transition-colors text-left cursor-pointer"
+                    onClick={() => setActiveModal("termos")}
+                    className="text-sm text-gray-500 hover:text-brand-purple transition-colors text-left cursor-pointer active:scale-95"
                   >
                     Termos de Uso
                   </button>
                 </li>
                 <li>
-                  <button 
+                  <button
                     type="button"
-                    onClick={() => setActiveModal('privacidade')}
-                    className="text-sm text-gray-500 hover:text-brand-purple transition-colors text-left cursor-pointer"
+                    onClick={() => setActiveModal("privacidade")}
+                    className="text-sm text-gray-500 hover:text-brand-purple transition-colors text-left cursor-pointer active:scale-95"
                   >
                     Privacidade
                   </button>

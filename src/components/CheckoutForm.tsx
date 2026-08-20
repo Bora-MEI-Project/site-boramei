@@ -1,18 +1,19 @@
 "use client";
 
-import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { useState, useEffect, useRef } from 'react';
-import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
-import Modal from './Modal';
-import TermosContent from './TermosContent';
-import PrivacidadeContent from './PrivacidadeContent';
-import { processarCheckout, aguardarPagamento } from '@/lib/pagbank';
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { useState, useEffect, useRef } from "react";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
+import Modal from "./Modal";
+import TermosContent from "./TermosContent";
+import PrivacidadeContent from "./PrivacidadeContent";
+import { processarCheckout, aguardarPagamento } from "@/lib/pagbank";
+import { obterPlano, PLANOS } from "@/lib/planos";
 
 const PIX_EXPIRACAO_PADRAO_SEGUNDOS = 20 * 60;
 
 const TURNSTILE_SITE_KEY =
-  process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '0x4AAAAAAD8KKEZx5RbTtcS4';
+  process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "0x4AAAAAAD8KKEZx5RbTtcS4";
 
 /** Segundos restantes até a expiração real do Pix (devolvida pelo PagBank). */
 function segundosAteExpirar(expiraEm: string | null): number {
@@ -33,27 +34,28 @@ function intervaloPixMs(decorridoMs: number): number {
 
 export default function CheckoutForm() {
   const searchParams = useSearchParams();
-  const plano = searchParams.get('plano') || 'basixo';
+  const plano = obterPlano(searchParams.get("plano"));
 
-  const preco = plano === 'profissional' ? '39.00' : plano === 'basico' ? '9.90' : '19.00';
-  const precoExibicao = preco.replace('.', ',');
+  const preco = PLANOS[plano].preco;
+  const precoExibicao = preco.replace(".", ",");
   
   // Estados do Formulário
-  const [metodoPagamento, setMetodoPagamento] = useState<'cartao' | 'pix'>('cartao');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [cpf, setCpf] = useState('');
-  const [phone, setPhone] = useState('');
-  const [cep, setCep] = useState(''); 
-  const [numero, setNumero] = useState(''); 
-  const [senha, setSenha] = useState('');
-  const [confirmarSenha, setConfirmarSenha] = useState('');
-  const [cardName, setCardName] = useState('');
-  const [cardCpf, setCardCpf] = useState('');
-  const [cardNumber, setCardNumber] = useState('');
-  const [expiry, setExpiry] = useState('');
-  const [cvv, setCvv] = useState('');
-  const [checkoutModal, setCheckoutModal] = useState<null | 'termos' | 'privacidade'>(null);
+  const [metodoPagamento, setMetodoPagamento] = useState<"cartao" | "pix">("cartao");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [cpf, setCpf] = useState("");
+  const [phone, setPhone] = useState("");
+  const [cnpj, setCnpj] = useState("");
+  const [cep, setCep] = useState("");
+  const [numero, setNumero] = useState(""); 
+  const [senha, setSenha] = useState("");
+  const [confirmarSenha, setConfirmarSenha] = useState("");
+  const [cardName, setCardName] = useState("");
+  const [cardCpf, setCardCpf] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [cvv, setCvv] = useState("");
+  const [checkoutModal, setCheckoutModal] = useState<null | "termos" | "privacidade">(null);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   // Estados de Controle, Carregamento e PIX
@@ -115,14 +117,14 @@ export default function CheckoutForm() {
   }, [pixData]);
 
   const formatarTempo = (totalSegundos: number) => {
-    const minutos = Math.floor(totalSegundos / 60).toString().padStart(2, '0');
-    const segundos = (totalSegundos % 60).toString().padStart(2, '0');
+    const minutos = Math.floor(totalSegundos / 60).toString().padStart(2, "0");
+    const segundos = (totalSegundos % 60).toString().padStart(2, "0");
     return `${minutos}:${segundos}`;
   };
 
   // 📝 MÁSCARAS
   const formatarCpf = (raw: string) => {
-    let v = raw.replace(/\D/g, '');
+    let v = raw.replace(/\D/g, "");
     if (v.length > 11) v = v.slice(0, 11);
     if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
     else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3");
@@ -131,18 +133,33 @@ export default function CheckoutForm() {
   };
 
   const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.target.setCustomValidity('');
+    e.target.setCustomValidity("");
     setCpf(formatarCpf(e.target.value));
   };
 
   const handleCardCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.target.setCustomValidity('');
+    e.target.setCustomValidity("");
     setCardCpf(formatarCpf(e.target.value));
   };
 
+  const formatarCnpj = (raw: string) => {
+    let v = raw.replace(/\D/g, "");
+    if (v.length > 14) v = v.slice(0, 14);
+    if (v.length > 12) v = v.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{1,2})/, "$1.$2.$3/$4-$5");
+    else if (v.length > 8) v = v.replace(/(\d{2})(\d{3})(\d{3})(\d{1,4})/, "$1.$2.$3/$4");
+    else if (v.length > 5) v = v.replace(/(\d{2})(\d{3})(\d{1,3})/, "$1.$2.$3");
+    else if (v.length > 2) v = v.replace(/(\d{2})(\d{1,3})/, "$1.$2");
+    return v;
+  };
+
+  const handleCnpjChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.target.setCustomValidity("");
+    setCnpj(formatarCnpj(e.target.value));
+  };
+
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.target.setCustomValidity(''); 
-    let v = e.target.value.replace(/\D/g, '');
+    e.target.setCustomValidity(""); 
+    let v = e.target.value.replace(/\D/g, "");
     if (v.length > 11) v = v.slice(0, 11);
     if (v.length > 6) v = `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}`;
     else if (v.length > 2) v = `(${v.slice(0, 2)}) ${v.slice(2)}`;
@@ -151,24 +168,24 @@ export default function CheckoutForm() {
   };
 
   const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.target.setCustomValidity('');
-    let v = e.target.value.replace(/\D/g, '');
+    e.target.setCustomValidity("");
+    let v = e.target.value.replace(/\D/g, "");
     if (v.length > 8) v = v.slice(0, 8);
     if (v.length > 5) v = v.replace(/(\d{5})(\d{1,3})/, "$1-$2");
     setCep(v);
   };
 
   const handleCardChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.target.setCustomValidity(''); 
-    let v = e.target.value.replace(/\D/g, '');
+    e.target.setCustomValidity(""); 
+    let v = e.target.value.replace(/\D/g, "");
     if (v.length > 16) v = v.slice(0, 16);
-    v = v.replace(/(\d{4})(?=\d)/g, '$1 ');
+    v = v.replace(/(\d{4})(?=\d)/g, "$1 ");
     setCardNumber(v);
   };
 
   const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.target.setCustomValidity(''); 
-    let v = e.target.value.replace(/\D/g, '');
+    e.target.setCustomValidity(""); 
+    let v = e.target.value.replace(/\D/g, "");
     if (v.length > 4) v = v.slice(0, 4);
     if (v.length > 2) v = `${v.slice(0, 2)}/${v.slice(2)}`;
     setExpiry(v);
@@ -180,63 +197,70 @@ export default function CheckoutForm() {
     const form = e.currentTarget;
 
     // --- VALIDAÇÕES DE FRONTEND ---
-    const digitsCpf = cpf.replace(/\D/g, '');
-    const cpfInput = form.elements.namedItem('cpf') as HTMLInputElement;
+    const digitsCpf = cpf.replace(/\D/g, "");
+    const cpfInput = form.elements.namedItem("cpf") as HTMLInputElement;
     if (digitsCpf.length !== 11) {
       cpfInput.setCustomValidity("Por favor, insira um CPF válido com 11 dígitos.");
       cpfInput.reportValidity(); return;
     }
 
-    const digitsPhone = phone.replace(/\D/g, '');
-    const phoneInput = form.elements.namedItem('phone') as HTMLInputElement;
+    const digitsPhone = phone.replace(/\D/g, "");
+    const phoneInput = form.elements.namedItem("phone") as HTMLInputElement;
     if (digitsPhone.length !== 11) {
       phoneInput.setCustomValidity("Por favor, insira o número de WhatsApp completo com 11 dígitos (DDD + 9 e o número).");
       phoneInput.reportValidity(); return;
     }
 
-    const digitsCep = cep.replace(/\D/g, '');
-    const cepInput = form.elements.namedItem('cep') as HTMLInputElement;
+    const digitsCnpj = cnpj.replace(/\D/g, "");
+    const cnpjInput = form.elements.namedItem("cnpj") as HTMLInputElement;
+    if (digitsCnpj.length > 0 && digitsCnpj.length !== 14) {
+      cnpjInput.setCustomValidity("Por favor, insira um CNPJ válido com 14 dígitos, ou deixe em branco.");
+      cnpjInput.reportValidity(); return;
+    }
+
+    const digitsCep = cep.replace(/\D/g, "");
+    const cepInput = form.elements.namedItem("cep") as HTMLInputElement;
     if (digitsCep.length !== 8) {
       cepInput.setCustomValidity("Por favor, insira um CEP válido com 8 dígitos.");
       cepInput.reportValidity(); return;
     }
 
-    const senhaInput = form.elements.namedItem('senha') as HTMLInputElement;
+    const senhaInput = form.elements.namedItem("senha") as HTMLInputElement;
     if (senha.length < 8) {
       senhaInput.setCustomValidity("A senha deve ter pelo menos 8 caracteres.");
       senhaInput.reportValidity(); return;
     }
 
-    const confirmarSenhaInput = form.elements.namedItem('confirmarSenha') as HTMLInputElement;
+    const confirmarSenhaInput = form.elements.namedItem("confirmarSenha") as HTMLInputElement;
     if (senha !== confirmarSenha) {
       confirmarSenhaInput.setCustomValidity("As senhas não coincidem.");
       confirmarSenhaInput.reportValidity(); return;
     }
 
-    if (metodoPagamento === 'cartao') {
-      const digitsCardCpf = cardCpf.replace(/\D/g, '');
-      const cardCpfInput = form.elements.namedItem('cardCpf') as HTMLInputElement;
+    if (metodoPagamento === "cartao") {
+      const digitsCardCpf = cardCpf.replace(/\D/g, "");
+      const cardCpfInput = form.elements.namedItem("cardCpf") as HTMLInputElement;
       if (digitsCardCpf.length !== 11) {
         cardCpfInput.setCustomValidity("Por favor, insira o CPF do titular do cartão, com 11 dígitos.");
         cardCpfInput.reportValidity(); return;
       }
 
-      const digitsCard = cardNumber.replace(/\D/g, '');
-      const cardInput = form.elements.namedItem('cardNumber') as HTMLInputElement;
+      const digitsCard = cardNumber.replace(/\D/g, "");
+      const cardInput = form.elements.namedItem("cardNumber") as HTMLInputElement;
       if (digitsCard.length < 16) {
         cardInput.setCustomValidity("Número do cartão incompleto. Certifique-se de preencher os 16 dígitos.");
         cardInput.reportValidity(); return;
       }
 
-      const digitsExpiry = expiry.replace(/\D/g, '');
-      const expiryInput = form.elements.namedItem('expiry') as HTMLInputElement;
+      const digitsExpiry = expiry.replace(/\D/g, "");
+      const expiryInput = form.elements.namedItem("expiry") as HTMLInputElement;
       if (digitsExpiry.length < 4) {
         expiryInput.setCustomValidity("Data de validade incompleta. Preencha o mês e o ano (MM/AA).");
         expiryInput.reportValidity(); return;
       }
 
-      const digitsCvv = cvv.replace(/\D/g, '');
-      const cvvInput = form.elements.namedItem('cvv') as HTMLInputElement;
+      const digitsCvv = cvv.replace(/\D/g, "");
+      const cvvInput = form.elements.namedItem("cvv") as HTMLInputElement;
       if (digitsCvv.length < 3) {
         cvvInput.setCustomValidity("Código CVV incompleto. Insira os 3 ou 4 dígitos de segurança.");
         cvvInput.reportValidity(); return;
@@ -263,10 +287,11 @@ export default function CheckoutForm() {
         email,
         cpf,
         whatsapp: phone,
+        cnpj,
         cep,
         numero
       },
-      cartao: metodoPagamento === 'cartao' ? {
+      cartao: metodoPagamento === "cartao" ? {
         nome: cardName,
         cpf: cardCpf,
         numero: cardNumber,
@@ -288,7 +313,7 @@ export default function CheckoutForm() {
 
     if (resultado.pixData) {
       setPixData(resultado.pixData);
-    } else if (resultado.cardStatus === 'analise') {
+    } else if (resultado.cardStatus === "analise") {
       setPagamentoAnalise(true);
     } else {
       setPagamentoConfirmado(true);
@@ -315,7 +340,7 @@ export default function CheckoutForm() {
             </div>
             <button
               onClick={() => window.location.href = `https://wa.me/558186195043?text=${encodeURIComponent("Olá, sou o mais novo usuario do BoraMEI!")}`}
-              className="w-full py-4 rounded-xl font-bold text-white text-base bg-[#A855F7] hover:bg-opacity-90 active:scale-95 cursor-pointer transition-all shadow-lg shadow-purple-200"
+              className="w-full py-4 rounded-xl font-bold text-white text-base bg-brand-purple hover:bg-opacity-90 active:scale-95 cursor-pointer transition-all shadow-lg shadow-purple-200"
             >
               Continuar
             </button>
@@ -337,7 +362,7 @@ export default function CheckoutForm() {
             </div>
             <button
               onClick={() => window.location.href = `https://wa.me/558186195043?text=${encodeURIComponent("Olá, meu pagamento no BoraMEI está em análise!")}`}
-              className="w-full py-4 rounded-xl font-bold text-white text-base bg-[#A855F7] hover:bg-opacity-90 active:scale-95 cursor-pointer transition-all shadow-lg shadow-purple-200"
+              className="w-full py-4 rounded-xl font-bold text-white text-base bg-brand-purple hover:bg-opacity-90 active:scale-95 cursor-pointer transition-all shadow-lg shadow-purple-200"
             >
               Falar com o suporte
             </button>
@@ -367,11 +392,11 @@ export default function CheckoutForm() {
               <input 
                 readOnly 
                 value={pixData.copiaECola} 
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-gray-50 text-xs text-gray-600 focus:outline-none"
+                className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-brand-bgLight text-xs text-gray-600 focus:outline-none"
               />
-              <button 
+              <button
                 onClick={() => navigator.clipboard.writeText(pixData.copiaECola)}
-                className="w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-lg transition-colors text-sm"
+                className="w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-lg transition-colors text-sm cursor-pointer active:scale-95"
               >
                 📋 Copiar Código
               </button>
@@ -400,22 +425,22 @@ export default function CheckoutForm() {
             <div className="grid grid-cols-2 gap-4">
               <button
                 type="button"
-                onClick={() => setMetodoPagamento('cartao')}
+                onClick={() => setMetodoPagamento("cartao")}
                 className={`py-3 rounded-xl border-2 font-bold text-sm transition-all cursor-pointer ${
-                  metodoPagamento === 'cartao'
-                    ? 'border-brand-purple bg-brand-purple/10 text-brand-purple'
-                    : 'border-gray-200 bg-gray-50 text-gray-400 hover:border-gray-300'
+                  metodoPagamento === "cartao"
+                    ? "border-brand-purple bg-brand-purple/10 text-brand-purple"
+                    : "border-gray-200 bg-brand-bgLight text-gray-400 hover:border-gray-300"
                 }`}
               >
                 💳 Cartão de crédito
               </button>
               <button
                 type="button"
-                onClick={() => setMetodoPagamento('pix')}
+                onClick={() => setMetodoPagamento("pix")}
                 className={`py-3 rounded-xl border-2 font-bold text-sm transition-all cursor-pointer ${
-                  metodoPagamento === 'pix'
-                    ? 'border-brand-purple bg-brand-purple/10 text-brand-purple'
-                    : 'border-gray-200 bg-gray-50 text-gray-400 hover:border-gray-300'
+                  metodoPagamento === "pix"
+                    ? "border-brand-purple bg-brand-purple/10 text-brand-purple"
+                    : "border-gray-200 bg-brand-bgLight text-gray-400 hover:border-gray-300"
                 }`}
               >
                 🔸 Pagar com PIX
@@ -430,7 +455,7 @@ export default function CheckoutForm() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Nome completo</label>
                   <input 
                     type="text" name="name" value={name}
-                    onChange={(e) => { e.target.setCustomValidity(''); setName(e.target.value); }}
+                    onChange={(e) => { e.target.setCustomValidity(""); setName(e.target.value); }}
                     placeholder="João Silva" 
                     className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple outline-none text-sm" 
                     required disabled={isLoading}
@@ -442,7 +467,7 @@ export default function CheckoutForm() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
                   <input
                     type="email" name="email" value={email}
-                    onChange={(e) => { e.target.setCustomValidity(''); setEmail(e.target.value); }}
+                    onChange={(e) => { e.target.setCustomValidity(""); setEmail(e.target.value); }}
                     placeholder="joao@email.com"
                     className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple outline-none text-sm"
                     required disabled={isLoading}
@@ -463,18 +488,30 @@ export default function CheckoutForm() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp / Celular</label>
                     <div className="flex w-full rounded-xl border border-gray-300 focus-within:ring-2 focus-within:ring-brand-purple focus-within:border-brand-purple transition-all overflow-hidden bg-white">
-                      <span className="flex items-center justify-center px-4 bg-gray-50 border-r border-gray-300 text-gray-500 font-medium select-none text-sm">
+                      <span className="flex items-center justify-center px-4 bg-brand-bgLight border-r border-gray-300 text-gray-500 font-medium select-none text-sm">
                         +55
                       </span>
                       <input
                         type="tel" name="phone" value={phone} onChange={handlePhoneChange}
                         placeholder="(11) 99999-9999"
-                        className="w-full px-4 py-3 outline-none bg-transparent text-sm disabled:bg-gray-50"
+                        className="w-full px-4 py-3 outline-none bg-transparent text-sm disabled:bg-brand-bgLight"
                         required disabled={isLoading}
                       />
                     </div>
                     <p className="text-xs text-gray-400 mt-1">Este será o número usado pelo chatbot para falar com você.</p>
                   </div>
+                </div>
+
+                {/* CNPJ (opcional) */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">CNPJ (opcional)</label>
+                  <input
+                    type="text" name="cnpj" value={cnpj} onChange={handleCnpjChange}
+                    placeholder="00.000.000/0000-00"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple outline-none text-sm"
+                    disabled={isLoading}
+                  />
+                  <p className="text-xs text-gray-400 mt-1">Caso já tenha o MEI aberto, informe o CNPJ aqui.</p>
                 </div>
 
                 {/* CEP e Número */}
@@ -492,7 +529,7 @@ export default function CheckoutForm() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Número</label>
                     <input 
                       type="text" name="numero" value={numero}
-                      onChange={(e) => setNumero(e.target.value.replace(/\D/g, ''))}
+                      onChange={(e) => setNumero(e.target.value.replace(/\D/g, ""))}
                       placeholder="123" 
                       className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple outline-none text-sm" 
                       required disabled={isLoading}
@@ -506,7 +543,7 @@ export default function CheckoutForm() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Crie uma senha</label>
                     <input
                       type="password" name="senha" value={senha}
-                      onChange={(e) => { e.target.setCustomValidity(''); setSenha(e.target.value); }}
+                      onChange={(e) => { e.target.setCustomValidity(""); setSenha(e.target.value); }}
                       placeholder="Mínimo de 8 caracteres"
                       className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple outline-none text-sm"
                       required minLength={8} disabled={isLoading}
@@ -517,7 +554,7 @@ export default function CheckoutForm() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Confirme a senha</label>
                     <input
                       type="password" name="confirmarSenha" value={confirmarSenha}
-                      onChange={(e) => { e.target.setCustomValidity(''); setConfirmarSenha(e.target.value); }}
+                      onChange={(e) => { e.target.setCustomValidity(""); setConfirmarSenha(e.target.value); }}
                       placeholder="Repita a senha"
                       className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple outline-none text-sm"
                       required minLength={8} disabled={isLoading}
@@ -527,13 +564,13 @@ export default function CheckoutForm() {
               </div>
 
               {/* Campos do Cartão ou Mensagem PIX */}
-              {metodoPagamento === 'cartao' ? (
+              {metodoPagamento === "cartao" ? (
                 <div className="space-y-4 pt-4 border-t border-gray-100 mt-2">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Nome no cartão</label>
                     <input
                       type="text" name="cardName" value={cardName}
-                      onChange={(e) => { e.target.setCustomValidity(''); setCardName(e.target.value); }}
+                      onChange={(e) => { e.target.setCustomValidity(""); setCardName(e.target.value); }}
                       placeholder="Como impresso no cartão"
                       className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple outline-none text-sm"
                       required disabled={isLoading}
@@ -571,7 +608,7 @@ export default function CheckoutForm() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">CVV</label>
                       <input 
                         type="text" name="cvv" value={cvv}
-                        onChange={(e) => { e.target.setCustomValidity(''); setCvv(e.target.value.replace(/\D/g, '').slice(0, 4)); }}
+                        onChange={(e) => { e.target.setCustomValidity(""); setCvv(e.target.value.replace(/\D/g, "").slice(0, 4)); }}
                         placeholder="123" 
                         className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple outline-none text-sm" 
                         required disabled={isLoading}
@@ -580,7 +617,7 @@ export default function CheckoutForm() {
                   </div>
                 </div>
               ) : (
-                <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-600 space-y-2 pt-2 mt-4">
+                <div className="p-4 bg-brand-bgLight rounded-xl border border-gray-200 text-sm text-gray-600 space-y-2 pt-2 mt-4">
                   <p>⚡ O código QR do PIX será gerado assim que clicar no botão abaixo.</p>
                   <p>Aprovação instantânea para liberar os seus superpoderes do BoraMEI!</p>
                 </div>
@@ -594,9 +631,9 @@ export default function CheckoutForm() {
                     <p>{pagamentoErro}</p>
                   </div>
 
-                  {(erroCodigo === 'EMAIL_DUPLICADO' ||
-                    erroCodigo === 'CPF_DUPLICADO' ||
-                    erroCodigo === 'WHATSAPP_DUPLICADO') && (
+                  {(erroCodigo === "EMAIL_DUPLICADO" ||
+                    erroCodigo === "CPF_DUPLICADO" ||
+                    erroCodigo === "WHATSAPP_DUPLICADO") && (
                     <a
                       href={`https://wa.me/558186195043?text=${encodeURIComponent("Olá, já tenho cadastro no BoraMEI e preciso de ajuda!")}`}
                       className="self-start text-sm font-semibold text-brand-purple hover:underline"
@@ -613,16 +650,16 @@ export default function CheckoutForm() {
                   <input
                     id="aceita-termos" type="checkbox" checked={acceptedTerms}
                     onChange={(e) => setAcceptedTerms(e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300 text-[#A855F7] focus:ring-[#A855F7] transition-colors cursor-pointer"
+                    className="h-4 w-4 rounded border-gray-300 text-brand-purple focus:ring-brand-purple transition-colors cursor-pointer"
                     disabled={isLoading}
                   />
                 </div>
                 <div className="text-sm leading-tight">
                   <label htmlFor="aceita-termos" className="text-gray-600 cursor-pointer select-none">
-                    Li e aceito os{' '}
-                    <button type="button" onClick={() => setCheckoutModal('termos')} className="text-sm text-brand-purple hover:underline font-medium cursor-pointer transition-colors">Termos de Uso</button>
-                    {' '}e a{' '}
-                    <button type="button" onClick={() => setCheckoutModal('privacidade')} className="text-sm text-brand-purple hover:underline font-medium cursor-pointer transition-colors">Privacidade</button>
+                    Li e aceito os{" "}
+                    <button type="button" onClick={() => setCheckoutModal("termos")} className="text-sm text-brand-purple hover:underline font-medium cursor-pointer active:scale-95 transition-colors">Termos de Uso</button>
+                    {" "}e a{" "}
+                    <button type="button" onClick={() => setCheckoutModal("privacidade")} className="text-sm text-brand-purple hover:underline font-medium cursor-pointer active:scale-95 transition-colors">Privacidade</button>
                   </label>
                 </div>
               </div>
@@ -644,30 +681,30 @@ export default function CheckoutForm() {
                 disabled={!acceptedTerms || isLoading}
                 className={`w-full py-4 rounded-xl font-bold text-white text-base transition-all shadow-lg flex justify-center items-center ${
                   acceptedTerms && !isLoading
-                    ? 'bg-[#A855F7] hover:bg-opacity-90 cursor-pointer shadow-purple-200'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none'
+                    ? "bg-brand-purple hover:bg-opacity-90 cursor-pointer active:scale-95 shadow-purple-200"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
                 }`}
               >
                 {isLoading ? (
                   <span className="animate-pulse">Processando...</span>
                 ) : (
-                  'Finalizar Assinatura'
+                  "Finalizar Assinatura"
                 )}
               </button>
 
               {/* Aviso de cobrança, visível no momento da compra */}
               <p className="text-xs text-gray-500 text-center">
-                {metodoPagamento === 'cartao'
+                {metodoPagamento === "cartao"
                   ? `Teste grátis de 90 dias disponível apenas no cartão de crédito. Assinatura mensal de R$ ${precoExibicao}, com a primeira cobrança no dia 91 e renovação automática. Cancele quando quiser.`
                   : `Pagamento via PIX de R$ ${precoExibicao} referente ao ciclo atual. Sem período de teste e sem renovação automática — vale só para este ciclo.`}
               </p>
 
               {/* Modais de Termos e Privacidade */}
-              <Modal isOpen={checkoutModal === 'termos'} onClose={closeCheckoutModal} title="Termos de Uso">
+              <Modal isOpen={checkoutModal === "termos"} onClose={closeCheckoutModal} title="Termos de Uso">
                 <TermosContent />
               </Modal>
 
-              <Modal isOpen={checkoutModal === 'privacidade'} onClose={closeCheckoutModal} title="Política de Privacidade">
+              <Modal isOpen={checkoutModal === "privacidade"} onClose={closeCheckoutModal} title="Política de Privacidade">
                 <PrivacidadeContent />
               </Modal>
             </form>

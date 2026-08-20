@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { URL_CHECKOUT } from '@/lib/pagbank';
+import { isPlanoId } from '@/lib/planos';
 
 interface ClienteCheckoutBody {
   nome: string;
   email: string;
   cpf: string;
   whatsapp: string;
+  /** Opcional: só vem preenchido quando o MEI já está aberto. */
+  cnpj?: string;
   endereco: { cep: string; numero: string };
 }
 
@@ -42,6 +45,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   const { senha, ...dadosCheckout } = body;
 
+  if (!isPlanoId(dadosCheckout.plano)) {
+    return NextResponse.json(
+      { sucesso: false, mensagem: 'Plano inválido.' },
+      { status: 400 }
+    );
+  }
+
   if (typeof senha !== 'string' || senha.length < SENHA_MIN_LENGTH) {
     return NextResponse.json(
       { sucesso: false, mensagem: `A senha deve ter pelo menos ${SENHA_MIN_LENGTH} caracteres.` },
@@ -54,7 +64,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const n8nResponse = await fetch(URL_CHECKOUT, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...dadosCheckout, senha_hash }),
+    body: JSON.stringify({
+      ...dadosCheckout,
+      cliente: { ...dadosCheckout.cliente, senha_hash },
+    }),
   });
 
   const data: unknown = await n8nResponse.json().catch(() => null);

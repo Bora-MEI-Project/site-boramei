@@ -4,7 +4,7 @@ import { getUsuarioLogado } from '@/lib/auth';
 
 // Prefixos de rota que exigem sessão válida. Adicione novos aqui conforme
 // novas áreas do cliente forem criadas.
-const PROTECTED_ROUTES = ['/user'];
+const PROTECTED_ROUTES = ['/user', '/financeiro', '/seguranca'];
 
 export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
@@ -25,5 +25,5 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 }
 
 export const config = {
-  matcher: ['/user', '/user/:path*'],
+  matcher: ['/user', '/user/:path*', '/financeiro', '/financeiro/:path*', '/seguranca', '/seguranca/:path*'],
 };

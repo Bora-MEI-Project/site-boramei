@@ -1,5 +1,5 @@
-import { LogIn } from 'lucide-react';
-import LoginForm from '@/components/LoginForm';
+import { LogIn } from "lucide-react";
+import LoginForm from "@/components/LoginForm";
 
 export default function LoginPage() {
   return (
@@ -11,7 +11,7 @@ export default function LoginPage() {
           </div>
           <div>
             <h1 className="text-xl font-bold tracking-tight">Área do cliente</h1>
-            <p className="text-sm text-neutral-500">Entre com seus dados para acessar sua conta.</p>
+            <p className="text-sm text-gray-500">Entre com seus dados para acessar sua conta.</p>
           </div>
         </header>
 

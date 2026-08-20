@@ -1,8 +1,6 @@
-
-
 export default function HowItWorks() {
   return (
-    <section className="bg-gray-50 py-20 px-6"> {/* Seção agora é bg-gray-50 */}
+    <section className="bg-brand-bgLight py-20 px-6">
       <div className="max-w-7xl mx-auto text-center">
         {/* Título e Subtítulo da Seção */}
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">

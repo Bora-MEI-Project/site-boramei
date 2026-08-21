@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
+import MeiInfo from "@/components/MeiInfo";
 import HowItWorks from "@/components/HowItWorks";
 import About from "@/components/About";
 import Pricing from "@/components/Pricing";
@@ -13,6 +14,7 @@ export default function Home() {
       <main>
         <Hero />
         <Features />
+        <MeiInfo />
         <HowItWorks />
         <About />
         <Pricing />

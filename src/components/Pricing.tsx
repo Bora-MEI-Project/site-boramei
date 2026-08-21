@@ -38,7 +38,7 @@ export default function Pricing() {
           </button>
 
           {/* ÁREA DOS CARDS */}
-          <div className="w-full max-w-sm lg:max-w-none overflow-hidden lg:overflow-visible pt-6 -mt-6">
+          <div className="w-full max-w-sm lg:max-w-none overflow-x-hidden lg:overflow-visible pt-6 -mt-6">
             
             {/* TRILHO DA ANIMAÇÃO */}
             <div
@@ -49,8 +49,8 @@ export default function Pricing() {
 
               {/* CARD 0: BÁSICO */}
               <div className="w-full shrink-0 lg:w-[350px] px-2 lg:px-0">
-                <div className="flex flex-col h-[480px] p-8 rounded-3xl border-2 border-gray-300 shadow-xl relative bg-white text-center">
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gray-500 text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider whitespace-nowrap">
+                <div className="flex flex-col min-h-[600px] p-8 rounded-3xl border-2 border-brand-purple/30 shadow-xl shadow-purple-100 relative bg-white text-center">
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-purple text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider whitespace-nowrap">
                     Teste de 3 meses
                   </div>
 
@@ -78,11 +78,19 @@ export default function Pricing() {
                       <span className="mt-0.5">○</span>
                       <span className="text-base">Dúvidas com IA limitadas</span>
                     </li>
+                    <li className="flex items-start gap-3 text-gray-400 text-left">
+                      <span className="mt-0.5">○</span>
+                      <span className="text-base">Gerar um Certificado Digital (Precisa CNH Digital)</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-400 text-left">
+                      <span className="mt-0.5">○</span>
+                      <span className="text-base">Emissão de Notas</span>
+                    </li>
                   </ul>
 
                   <button
                     onClick={() => router.push("/checkout?plano=basico")}
-                    className="w-full py-4 rounded-full border-2 border-gray-400 text-gray-700 text-lg font-bold hover:bg-gray-100 transition-all active:scale-95 cursor-pointer mt-auto"
+                    className="w-full py-4 rounded-full border-2 border-brand-purple text-brand-purple text-lg font-bold hover:bg-brand-purple/10 transition-all active:scale-95 cursor-pointer mt-auto"
                   >
                     Assinar Básico
                   </button>
@@ -91,7 +99,7 @@ export default function Pricing() {
 
               {/* CARD 1: ESSENCIAL */}
               <div className="w-full shrink-0 lg:w-[350px] px-2 lg:px-0">
-                <div className="flex flex-col h-[480px] p-8 rounded-3xl border-2 border-brand-green bg-white text-center">
+                <div className="flex flex-col min-h-[600px] p-8 rounded-3xl border-2 border-brand-green bg-white text-center">
                   <h3 className="text-3xl font-bold text-gray-900 mb-2">Essencial</h3>
                   <div className="flex items-baseline justify-center gap-1 mb-8">
                     <span className="text-3xl font-bold text-gray-900">R$</span>
@@ -102,15 +110,27 @@ export default function Pricing() {
                   <ul className="space-y-4 mb-10 flex-grow mx-auto w-fit">
                     <li className="flex items-start gap-3 text-gray-600 text-left">
                       <span className="text-brand-green mt-0.5">✓</span>
-                      <span className="text-base">Emissão de DAS via WhatsApp</span>
+                      <span className="text-base">Tudo do plano Básico</span>
                     </li>
                     <li className="flex items-start gap-3 text-gray-600 text-left">
                       <span className="text-brand-green mt-0.5">✓</span>
-                      <span className="text-base">Lembretes de vencimento</span>
+                      <span className="text-base">Gerar um Certificado Digital (Precisa CNH Digital)</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-600 text-left">
+                      <span className="text-brand-green mt-0.5">✓</span>
+                      <span className="text-base">Emissão de Notas</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-600 text-left">
+                      <span className="text-brand-green mt-0.5">✓</span>
+                      <span className="text-base">Acesso a um painel financeiro</span>
                     </li>
                     <li className="flex items-start gap-3 text-gray-400 text-left">
                       <span className="mt-0.5">○</span>
-                      <span className="text-base">Dúvidas com IA limitadas</span>
+                      <span className="text-base">Assistente de Marketing e Vendas</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-400 text-left">
+                      <span className="mt-0.5">○</span>
+                      <span className="text-base">Curso de Gestão financeira</span>
                     </li>
                   </ul>
 

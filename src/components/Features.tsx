@@ -33,11 +33,11 @@ export default function Features() {
 
           {/* Card 2: Lembretes Automáticos */}
           <div className="bg-brand-bgLight rounded-2xl p-8 border border-gray-100 relative overflow-hidden flex flex-col">
-            {/* Detalhe verde no fundo ajustado para destacar no card cinza */}
-            <div className="absolute top-0 right-0 w-40 h-40 bg-green-100/40 rounded-bl-[100px] pointer-events-none"></div>
-            
+            {/* Detalhe roxo no fundo ajustado para destacar no card cinza */}
+            <div className="absolute top-0 right-0 w-40 h-40 bg-brand-purple/10 rounded-bl-[100px] pointer-events-none"></div>
+
             <div className="relative z-10">
-              <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center text-green-700 mb-6">
+              <div className="w-14 h-14 bg-brand-purple/10 rounded-xl flex items-center justify-center text-brand-purple mb-6">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-7 h-7">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
                 </svg>

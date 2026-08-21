@@ -12,7 +12,11 @@ export default function Footer() {
 
   return (
     <>
-      <footer className="bg-brand-bgLight border-t border-gray-100 py-16 px-6 mt-20">
+      <footer className="bg-brand-bgLight border-t border-gray-100 py-16 px-6 mt-20 relative">
+        <div className="absolute top-0 left-0 right-0 h-1 flex">
+          <div className="w-1/2 bg-brand-purple"></div>
+          <div className="w-1/2 bg-brand-green"></div>
+        </div>
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-8">
           
           {/* Coluna da Esquerda: Logo e Copyright */}
@@ -44,8 +48,8 @@ export default function Footer() {
             <div>
               <h4 className="text-sm font-bold text-gray-900 mb-4">Suporte</h4>
               <ul className="space-y-3">
-                <li><a href="#ajuda" className="text-sm text-gray-500 hover:text-brand-purple transition-colors">Central de Ajuda</a></li>
-                <li><a href="#contato" className="text-sm text-gray-500 hover:text-brand-purple transition-colors">Contato</a></li>
+                <li><a href="#ajuda" className="text-sm text-gray-500 hover:text-brand-green transition-colors">Central de Ajuda</a></li>
+                <li><a href="#contato" className="text-sm text-gray-500 hover:text-brand-green transition-colors">Contato</a></li>
               </ul>
             </div>
 

@@ -12,11 +12,14 @@ export default function HowItWorks() {
 
         {/* Grade de Passos */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 relative">
-          
+
+          {/* Linha conectora entre os passos (apenas desktop) */}
+          <div className="hidden md:block absolute top-6 left-[16.5%] right-[16.5%] h-0.5 bg-gradient-to-r from-brand-purple/30 via-brand-green/30 to-brand-green/50 -z-10"></div>
+
           {/* Passo 1 */}
-          <div className="flex flex-col items-center text-center">
+          <div className="flex flex-col items-center text-center relative">
             {/* O círculo roxo ganha ainda mais destaque com o fundo cinza de trás */}
-            <div className="w-12 h-12 rounded-full bg-brand-purple/10 text-brand-purple font-bold flex items-center justify-center text-lg mb-6 shadow-sm">
+            <div className="relative z-10 w-12 h-12 rounded-full bg-brand-purple/10 text-brand-purple font-bold flex items-center justify-center text-lg mb-6 shadow-sm ring-8 ring-brand-bgLight">
               1
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-3">
@@ -28,8 +31,8 @@ export default function HowItWorks() {
           </div>
 
           {/* Passo 2 */}
-          <div className="flex flex-col items-center text-center">
-            <div className="w-12 h-12 rounded-full bg-brand-purple/10 text-brand-purple font-bold flex items-center justify-center text-lg mb-6 shadow-sm">
+          <div className="flex flex-col items-center text-center relative">
+            <div className="relative z-10 w-12 h-12 rounded-full bg-brand-green/10 text-brand-green font-bold flex items-center justify-center text-lg mb-6 shadow-sm ring-8 ring-brand-bgLight">
               2
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-3">
@@ -41,8 +44,8 @@ export default function HowItWorks() {
           </div>
 
           {/* Passo 3 */}
-          <div className="flex flex-col items-center text-center">
-            <div className="w-12 h-12 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center text-lg mb-6 shadow-md shadow-emerald-500/20">
+          <div className="flex flex-col items-center text-center relative">
+            <div className="relative z-10 w-12 h-12 rounded-full bg-brand-green text-white font-bold flex items-center justify-center text-lg mb-6 shadow-md shadow-green-500/20 ring-8 ring-brand-bgLight">
               ✓
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-3">

@@ -22,10 +22,13 @@ export default function Navbar({ onSubscribeClick }: NavbarProps) {
           <a href="#solucoes" className="text-gray-600 hover:text-brand-purple font-medium transition-colors">
             Soluções
           </a>
+          <a href="#mei" className="text-gray-600 hover:text-brand-purple font-medium transition-colors">
+            MEI
+          </a>
           <a href="#sobre" className="text-gray-600 hover:text-brand-purple font-medium transition-colors">
             Sobre
           </a>
-          <a href="#planos" className="text-gray-600 hover:text-brand-purple font-medium transition-colors">
+          <a href="#planos" className="text-gray-600 hover:text-brand-green font-medium transition-colors">
             Preços
           </a>
         </nav>

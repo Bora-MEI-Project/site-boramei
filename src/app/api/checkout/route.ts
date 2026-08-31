@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { URL_CHECKOUT } from '@/lib/pagbank';
+import { URL_CHECKOUT } from '@/lib/pagamentos';
 import { isPlanoId } from '@/lib/planos';
 
 interface ClienteCheckoutBody {

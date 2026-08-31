@@ -9,7 +9,7 @@ declare global {
 // --- CONFIGURAÇÃO ---
 // Troque por variáveis de ambiente antes de ir para produção.
 // A chave pública e a URL da API mudam entre sandbox e produção.
-const PUBLIC_KEY = `MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAw6wDPz05WyzykEqQszzhVFR7o7WFwmOCiJLmNAPr4y2ab7stEe6H6OoRB1GUKAjIW0o/tgIcU25SpFdur6oU7TZKMUbv5vQB66FBcP80Tnbef5By+EQklqUUZYDt2iLYog+Y6RyxkvNHyPPgwJY26ZQed5zkVCcMbzDVMeg5nUtem0BpO0sV/01Zzg93V+Ak5qj10okW/4YXCaZd5g95w1kxSL64AK8LH1u+ewHzg5E+D4ScE9OCTaM+EAHjkZccJEPdxfqVcHzIIDEtvWpFmGZVgBRuMJ/h89j02kIoKj8RtkvX7GgqV9e3hEDs5twWkJzpk+9OIs7g34hd5LBACQIDAQAB`;
+const PUBLIC_KEY = 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAr+ZqgD892U9/HXsa7XqBZUayPquAfh9xx4iwUbTSUAvTlmiXFQNTp0Bvt/5vK2FhMj39qSv1zi2OuBjvW38q1E374nzx6NNBL5JosV0+SDINTlCG0cmigHuBOyWzYmjgca+mtQu4WczCaApNaSuVqgb8u7Bd9GCOL4YJotvV5+81frlSwQXralhwRzGhj/A57CGPgGKiuPT+AOGmykIGEZsSD9RKkyoKIoc0OS8CPIzdBOtTQCIwrLn2FxI83Clcg55W8gkFSOS6rWNbG5qFZWMll6yl02HtunalHmUlRUL66YeGXdMDC2PuRcmZbGO5a/2tbVppW6mfSWG3NPRpgwIDAQAB'; //`MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAw6wDPz05WyzykEqQszzhVFR7o7WFwmOCiJLmNAPr4y2ab7stEe6H6OoRB1GUKAjIW0o/tgIcU25SpFdur6oU7TZKMUbv5vQB66FBcP80Tnbef5By+EQklqUUZYDt2iLYog+Y6RyxkvNHyPPgwJY26ZQed5zkVCcMbzDVMeg5nUtem0BpO0sV/01Zzg93V+Ak5qj10okW/4YXCaZd5g95w1kxSL64AK8LH1u+ewHzg5E+D4ScE9OCTaM+EAHjkZccJEPdxfqVcHzIIDEtvWpFmGZVgBRuMJ/h89j02kIoKj8RtkvX7GgqV9e3hEDs5twWkJzpk+9OIs7g34hd5LBACQIDAQAB`;
 
 const N8N_BASE = "https://n8n.boramei.cloud/webhook";
 /** URL real do n8n — usada só pela rota interna /api/checkout (server-side), nunca chamada direto do navegador. */
@@ -17,6 +17,11 @@ export const URL_CHECKOUT = `${N8N_BASE}/boramei-checkout`;
 const URL_STATUS = `${N8N_BASE}/boramei-status-pedido`;
 /** O checkout do navegador fala com a nossa API route, que hasheia a senha antes de repassar ao n8n. */
 const URL_CHECKOUT_PROXY = "/api/checkout";
+
+// TESTE: na homologação, a Efí confirma sozinha pagamentos abaixo de R$10 —
+// desativa a exigência e o envio de idRec pra simplificar o teste do polling
+// de confirmação. Voltar para `true` antes de produção.
+const EXIGIR_ID_REC = false;
 
 // --- TIPAGENS ---
 export interface ClienteData {
@@ -58,8 +63,9 @@ export interface CheckoutResult {
   cardStatus?: CardStatus;
   pixData?: {
     orderId: string;
-    qrCodeUrl: string;
     copiaECola: string;
+    /** Id da recorrência na Efí — obrigatório: sem ele o n8n não consegue checar se o cliente rejeitou/cancelou a recorrência. */
+    idRec: string;
     expiraEm: string | null;
   };
 }
@@ -237,12 +243,15 @@ export async function processarCheckout({
       }
 
       const orderId: string = data?.id || '';
-      const qr = data?.qr_codes?.[0];
-      const copiaECola: string = qr?.text || '';
-      const qrCodeUrl: string =
-        qr?.links?.find((l: any) => l.rel === 'QRCODE.PNG')?.href || '';
+      // A Efí (via n8n) não devolve mais a imagem pronta do QR Code (não há
+      // "imagemQrcode"): o endpoint de recorrência (/v2/rec) só retorna o
+      // copia-e-cola. A imagem agora é gerada no cliente, a partir dele.
+      const copiaECola: string = data?.pixCopiaECola || '';
+      // idRec é obrigatório (fora do modo de teste): sem ele o n8n não consegue
+      // consultar /v2/rec/:idRec e checar se o cliente rejeitou/cancelou a recorrência.
+      const idRec: string = data?.idRec || '';
 
-      if (!copiaECola || !orderId) {
+      if (!copiaECola || !orderId || (EXIGIR_ID_REC && !idRec)) {
         return {
           sucesso: false,
           mensagem: "O Pix não pôde ser gerado. Tente novamente em instantes."
@@ -253,9 +262,9 @@ export async function processarCheckout({
         sucesso: true,
         pixData: {
           orderId,
-          qrCodeUrl,
           copiaECola,
-          expiraEm: qr?.expiration_date || null
+          idRec,
+          expiraEm: data?.expiraEm || null
         }
       };
     }
@@ -295,19 +304,26 @@ export async function processarCheckout({
 
 // --- CONSULTA DE STATUS ---
 
-/** Consulta única. Serve para Pix e para cartão em análise. */
-export async function consultarStatus(orderId: string): Promise<StatusPedido> {
+/**
+ * Consulta única. Serve para Pix e para cartão em análise.
+ * `idRec` só existe para Pix (recorrência Efí) — o n8n usa para checar se o
+ * cliente rejeitou/cancelou a recorrência em paralelo à cobrança do ciclo atual.
+ */
+export async function consultarStatus(orderId: string, idRec: string | null = null): Promise<StatusPedido> {
   if (!orderId) return { pago: false, status: 'NOT_FOUND' };
 
   try {
-    const response = await fetch(`${URL_STATUS}?id=${encodeURIComponent(orderId)}`);
+    const params = new URLSearchParams({ id: orderId });
+    if (idRec) params.set('idRec', idRec);
+
+    const response = await fetch(`${URL_STATUS}?${params.toString()}`);
     if (!response.ok) return { pago: false, status: 'ERRO' };
 
     const data = primeiroItem(await response.json());
-    return {
-      pago: data?.pago === true,
-      status: String(data?.status || 'WAITING')
-    };
+    // O n8n (Efí) não devolve um booleano "pago" — só a string de status
+    // ('pendente' | 'aprovado' | 'rejeitado'). "pago" é derivado daqui.
+    const status = String(data?.status || 'pendente').toLowerCase();
+    return { pago: status === 'aprovado', status };
   } catch {
     return { pago: false, status: 'ERRO' };
   }
@@ -318,40 +334,47 @@ export async function checarStatusPix(orderId: string): Promise<boolean> {
   return (await consultarStatus(orderId)).pago;
 }
 
+/** Resultado final do polling: pago, rejeitado explicitamente pela Efí, ou expirado sem resposta. */
+export type ResultadoEspera = 'pago' | 'rejeitado' | 'expirado';
+
 /**
- * Faz polling até o pagamento cair ou o tempo acabar.
+ * Faz polling até o pagamento cair, ser rejeitado ou o tempo acabar.
  * Devolve uma função de cancelamento para você chamar no cleanup do componente.
  */
 export function aguardarPagamento(
   orderId: string,
   opcoes: {
+    /** Id da recorrência na Efí — repassado a cada consulta para o n8n checar rejeição/cancelamento. */
+    idRec?: string | null;
     /** Fixo (ms) ou função do tempo decorrido (ms) para um polling com backoff. */
     intervaloMs?: number | ((decorridoMs: number) => number);
     limiteMs?: number;
     onTick?: (status: StatusPedido) => void;
   } = {}
-): { promessa: Promise<boolean>; cancelar: () => void } {
+): { promessa: Promise<ResultadoEspera>; cancelar: () => void } {
   const intervaloOpcao = opcoes.intervaloMs;
   const calcularIntervalo: (decorridoMs: number) => number = typeof intervaloOpcao === 'function'
     ? intervaloOpcao
     : () => intervaloOpcao ?? 3000;
   const limite = opcoes.limiteMs ?? 5 * 60 * 1000;
+  const idRec = EXIGIR_ID_REC ? (opcoes.idRec ?? null) : null;
 
   let cancelado = false;
   const cancelar = () => { cancelado = true; };
 
-  const promessa = (async () => {
+  const promessa = (async (): Promise<ResultadoEspera> => {
     const inicio = Date.now();
     const fim = inicio + limite;
 
     while (!cancelado && Date.now() < fim) {
-      const status = await consultarStatus(orderId);
+      const status = await consultarStatus(orderId, idRec);
       opcoes.onTick?.(status);
-      if (status.pago) return true;
+      if (status.pago) return 'pago';
+      if (status.status === 'rejeitado') return 'rejeitado';
       await new Promise(res => setTimeout(res, calcularIntervalo(Date.now() - inicio)));
     }
 
-    return false;
+    return 'expirado';
   })();
 
   return { promessa, cancelar };

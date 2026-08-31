@@ -4,7 +4,9 @@ import { getUsuarioLogado } from '@/lib/auth';
 
 // Prefixos de rota que exigem sessão válida. Adicione novos aqui conforme
 // novas áreas do cliente forem criadas.
-const PROTECTED_ROUTES = ['/user', '/financeiro', '/seguranca'];
+// "/admin" só garante sessão logada aqui — a checagem de "é o admin mesmo"
+// (e-mail na allowlist) é feita dentro das próprias rotas/páginas de admin.
+const PROTECTED_ROUTES = ['/user', '/financeiro', '/seguranca', '/admin'];
 
 export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
@@ -25,5 +27,10 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 }
 
 export const config = {
-  matcher: ['/user', '/user/:path*', '/financeiro', '/financeiro/:path*', '/seguranca', '/seguranca/:path*'],
+  matcher: [
+    '/user', '/user/:path*',
+    '/financeiro', '/financeiro/:path*',
+    '/seguranca', '/seguranca/:path*',
+    '/admin', '/admin/:path*',
+  ],
 };

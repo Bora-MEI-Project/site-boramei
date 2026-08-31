@@ -262,6 +262,97 @@ Sem lançamentos no período → todos os totais vêm `0` e os arrays de linha v
 
 ---
 
+## `GET /api/gestao`
+
+Indicadores da aba "Gestão" (`/financeiro/gestao`): Receita, Custos, Lucro estimado, Margem, Ponto de Equilíbrio, Projeção anual, Distância do limite do MEI e progresso da Meta de faturamento. Ao contrário de `/api/dre`, **não tem seletor de período** — sempre calcula com base no mês atual (dia 1 até hoje) e no ano corrente (1º de janeiro até hoje), igual ao Fluxo de Caixa.
+
+**Query:** nenhuma.
+
+### Resposta — 200
+
+```json
+{
+  "periodo": { "inicioMes": "2026-08-01", "inicioAno": "2026-01-01", "hoje": "2026-08-27" },
+  "receita": 2500,
+  "custos": 900,
+  "lucroEstimado": 1600,
+  "margem": 64,
+  "pontoEquilibrio": 1200,
+  "temCategoriaNaoClassificada": false,
+  "projecaoAnual": 20000,
+  "limiteMeiAnual": 81000,
+  "receitaAnoAcumulada": 13333.33,
+  "distanciaLimiteMei": 67666.67,
+  "projecaoUltrapassaLimite": false,
+  "metaFaturamentoMensal": 3000,
+  "progressoMetaPercent": 83.33,
+  "serieMensal": [
+    { "mes": 1, "mesLabel": "Jan", "realizado": 1800, "projecao": 0 },
+    { "mes": 8, "mesLabel": "Ago", "realizado": 2500, "projecao": 1666.67 },
+    { "mes": 9, "mesLabel": "Set", "realizado": 0, "projecao": 1666.67 }
+  ]
+}
+```
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| `receita` / `custos` | `number` | soma do mês atual, por `natureza` (inclui toda `natureza='receita'`, não só faturamento — ver `serieMensal` abaixo) |
+| `lucroEstimado` | `number` | `receita - custos` |
+| `margem` | `number` | `lucroEstimado/receita*100` (0 se `receita` for 0) |
+| `pontoEquilibrio` | `number \| null` | `despesasFixas / (1 - custosVariaveis/receita)`; `null` se `receita` for 0 ou `custosVariaveis >= receita` (indeterminado) |
+| `temCategoriaNaoClassificada` | `boolean` | `true` se houve gasto em alguma categoria sem `tipo_custo` definido — essas contam como fixas no cálculo acima |
+| `projecaoAnual` | `number` | `receitaAnoAcumulada / mêsAtual * 12` |
+| `limiteMeiAnual` | `number` | constante `81000`, sem proporcionalidade por mês de abertura |
+| `distanciaLimiteMei` | `number` | `limiteMeiAnual - receitaAnoAcumulada` (pode ser negativo, se já ultrapassou) |
+| `projecaoUltrapassaLimite` | `boolean` | `projecaoAnual > limiteMeiAnual` |
+| `metaFaturamentoMensal` | `number \| null` | valor salvo em `/api/metas`, `null` se o usuário nunca definiu |
+| `progressoMetaPercent` | `number \| null` | `receita/metaFaturamentoMensal*100`, `null` se não há meta definida |
+| `serieMensal` | array (12 itens, Jan–Dez) | base do gráfico "Previsão de faturamento" — barras sobrepostas de **faturamento** (só grupo `Receitas Diretas`, mais estrito que `receita` acima, que também soma Outras Entradas/Receitas Indiretas). `realizado` = faturamento de fato lançado naquele mês (`0` em meses futuros, parcial no mês corrente). `projecao` = média de faturamento mensal do ano (`faturamentoAnoAcumulado / mêsAtual`) para o mês atual em diante; `0` em meses já fechados (não se projeta o que já passou) |
+
+### Erros
+
+| Status | Corpo | Quando |
+|---|---|---|
+| 401 | `{ "mensagem": "Não autenticado." }` | sem cookie de sessão válido |
+
+---
+
+## `GET/PUT /api/metas`
+
+Meta de faturamento mensal do usuário, exibida como barra de progresso na aba Gestão. Uma linha por usuário em `bora_mei_core.metas_usuario` (tabela nova, ver `migrations/0002_add_classificacao_e_metas.sql`).
+
+### `GET` — Resposta 200
+
+```json
+{ "metaFaturamentoMensal": 3000 }
+```
+
+`metaFaturamentoMensal` vem `null` se o usuário nunca definiu uma meta.
+
+### `PUT` — Corpo da requisição
+
+```json
+{ "metaFaturamentoMensal": 3000 }
+```
+
+Faz upsert (`ON CONFLICT (usuario_id) DO UPDATE`) — sempre sobrescreve a meta anterior do usuário.
+
+### `PUT` — Resposta 200
+
+```json
+{ "metaFaturamentoMensal": 3000 }
+```
+
+### Erros
+
+| Status | Corpo | Quando |
+|---|---|---|
+| 400 | `{ "mensagem": "Corpo da requisição inválido." }` | JSON malformado (só no PUT) |
+| 400 | `{ "mensagem": "Meta deve ser um número maior que zero." }` | `metaFaturamentoMensal` ausente, não numérico ou `<= 0` (só no PUT) |
+| 401 | `{ "mensagem": "Não autenticado." }` | sem cookie de sessão válido |
+
+---
+
 ## Referência rápida
 
 | Rota | Método | Auth | Sucesso | Erros possíveis |
@@ -271,3 +362,8 @@ Sem lançamentos no período → todos os totais vêm `0` e os arrays de linha v
 | `/api/lancamentos` | POST | sessão | 201 | 400, 401 |
 | `/api/lancamentos/[id]` | DELETE | sessão | 200 | 401, 404 |
 | `/api/dre` | GET | sessão | 200 | 401 |
+| `/api/gestao` | GET | sessão | 200 | 401 |
+| `/api/metas` | GET | sessão | 200 | 401 |
+| `/api/metas` | PUT | sessão | 200 | 400, 401 |
+
+As rotas `/api/admin/categorias` e `/api/admin/categorias/[id]` (usadas só pela tela interna `/admin/categorias`) não fazem parte deste contrato de cliente — exigem sessão **e** e-mail na allowlist de `src/lib/adminAuth.ts` (401 sem sessão, 403 se logado mas não for admin). Documentação delas fica no cabeçalho do próprio `src/app/api/admin/categorias/route.ts`.

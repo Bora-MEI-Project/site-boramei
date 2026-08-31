@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FileBarChart, TrendingUp } from "lucide-react";
+import { FileBarChart, TrendingUp, Download } from "lucide-react";
 import FinanceiroTabs from "@/components/FinanceiroTabs";
 import DreChart from "@/components/DreChart";
+import { gerarPdfDre } from "@/lib/pdfDre";
 
 // ─────────────────────────────────────────────────────────────
 // /financeiro/dre — DRE Gerencial
@@ -237,7 +238,7 @@ export default function DrePage() {
         <FinanceiroTabs />
 
         {/* Seletor de período */}
-        <div className="mb-6 flex gap-3">
+        <div className="mb-6 flex flex-wrap gap-3">
           <select
             value={mes}
             onChange={(e) => setMes(Number(e.target.value))}
@@ -260,6 +261,14 @@ export default function DrePage() {
               </option>
             ))}
           </select>
+          <button
+            type="button"
+            onClick={() => gerarPdfDre(dre)}
+            className="ml-auto flex h-10 cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-600 transition hover:border-brand-purple/40 active:scale-95"
+          >
+            <Download className="h-4 w-4" />
+            Exportar PDF
+          </button>
         </div>
 
         {/* Cards de resumo (mês selecionado) */}

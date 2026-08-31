@@ -7,7 +7,8 @@ import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import Modal from "./Modal";
 import TermosContent from "./TermosContent";
 import PrivacidadeContent from "./PrivacidadeContent";
-import { processarCheckout, aguardarPagamento } from "@/lib/pagbank";
+import { processarCheckout, aguardarPagamento } from "@/lib/pagamentos";
+import { gerarQrCodeDataUrl } from "@/lib/qrcode";
 import { obterPlano, PLANOS } from "@/lib/planos";
 
 const PIX_EXPIRACAO_PADRAO_SEGUNDOS = 20 * 60;
@@ -60,7 +61,8 @@ export default function CheckoutForm() {
 
   // Estados de Controle, Carregamento e PIX
   const [isLoading, setIsLoading] = useState(false);
-  const [pixData, setPixData] = useState<{ orderId: string; qrCodeUrl: string; copiaECola: string; expiraEm: string | null } | null>(null);
+  const [pixData, setPixData] = useState<{ orderId: string; copiaECola: string; idRec: string; expiraEm: string | null } | null>(null);
+  const [qrCodeImagem, setQrCodeImagem] = useState<string | null>(null);
   const [pixSegundosRestantes, setPixSegundosRestantes] = useState(PIX_EXPIRACAO_PADRAO_SEGUNDOS);
   const pixDuracaoTotalRef = useRef(PIX_EXPIRACAO_PADRAO_SEGUNDOS);
   const [pagamentoConfirmado, setPagamentoConfirmado] = useState(false);
@@ -80,15 +82,19 @@ export default function CheckoutForm() {
     let ignorar = false;
 
     const { promessa, cancelar } = aguardarPagamento(pixData.orderId, {
+      idRec: pixData.idRec,
       intervaloMs: intervaloPixMs,
       limiteMs: segundosAteExpirar(pixData.expiraEm) * 1000,
     });
 
-    promessa.then((pago) => {
+    promessa.then((resultado) => {
       if (ignorar) return;
 
-      if (pago) {
+      if (resultado === 'pago') {
         setPagamentoConfirmado(true);
+      } else if (resultado === 'rejeitado') {
+        setPixData(null);
+        setPagamentoErro("O pagamento PIX foi rejeitado. Gere um novo código para tentar novamente.");
       } else {
         setPixData(null);
         setPagamentoErro("O código PIX expirou. Gere um novo código para continuar.");
@@ -100,6 +106,21 @@ export default function CheckoutForm() {
       cancelar();
     };
   }, [pixData]);
+
+  // 🖼️ QR CODE: Gera a imagem no navegador a partir do copia-e-cola (a Efí não manda a imagem pronta)
+  useEffect(() => {
+    if (!pixData?.copiaECola) {
+      setQrCodeImagem(null);
+      return;
+    }
+    let ignorar = false;
+
+    gerarQrCodeDataUrl(pixData.copiaECola)
+      .then((dataUrl) => { if (!ignorar) setQrCodeImagem(dataUrl); })
+      .catch(() => { if (!ignorar) setQrCodeImagem(null); });
+
+    return () => { ignorar = true; };
+  }, [pixData?.copiaECola]);
 
   // ⏳ CONTAGEM REGRESSIVA: Atualiza a barrinha com base na expiração real do Pix
   useEffect(() => {
@@ -191,7 +212,7 @@ export default function CheckoutForm() {
     setExpiry(v);
   };
 
-  // 🚀 SUBMIT DO FORMULÁRIO (Usando o pagbank.ts)
+  // 🚀 SUBMIT DO FORMULÁRIO (Usando o pagamentos.ts)
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
@@ -385,7 +406,13 @@ export default function CheckoutForm() {
               </div>
             </div>
 
-            <img src={pixData.qrCodeUrl} alt="QR Code PIX" className="w-64 h-64 border-2 border-brand-purple rounded-xl p-2" />
+            {qrCodeImagem ? (
+              <img src={qrCodeImagem} alt="QR Code PIX" className="w-64 h-64 border-2 border-brand-purple rounded-xl p-2" />
+            ) : (
+              <div className="w-64 h-64 border-2 border-brand-purple rounded-xl flex items-center justify-center text-sm text-gray-400">
+                Gerando QR Code...
+              </div>
+            )}
 
             <div className="w-full space-y-2">
               <label className="text-sm font-medium text-gray-700">PIX Copia e Cola:</label>

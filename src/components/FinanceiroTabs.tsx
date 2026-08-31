@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const ABAS = [
   { href: "/financeiro", label: "Fluxo de Caixa" },
   { href: "/financeiro/dre", label: "DRE Gerencial" },
+  { href: "/financeiro/gestao", label: "Gestão" },
 ];
 
 export default function FinanceiroTabs() {

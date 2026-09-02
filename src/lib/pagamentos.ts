@@ -9,7 +9,7 @@ declare global {
 // --- CONFIGURAÇÃO ---
 // Troque por variáveis de ambiente antes de ir para produção.
 // A chave pública e a URL da API mudam entre sandbox e produção.
-const PUBLIC_KEY = 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAr+ZqgD892U9/HXsa7XqBZUayPquAfh9xx4iwUbTSUAvTlmiXFQNTp0Bvt/5vK2FhMj39qSv1zi2OuBjvW38q1E374nzx6NNBL5JosV0+SDINTlCG0cmigHuBOyWzYmjgca+mtQu4WczCaApNaSuVqgb8u7Bd9GCOL4YJotvV5+81frlSwQXralhwRzGhj/A57CGPgGKiuPT+AOGmykIGEZsSD9RKkyoKIoc0OS8CPIzdBOtTQCIwrLn2FxI83Clcg55W8gkFSOS6rWNbG5qFZWMll6yl02HtunalHmUlRUL66YeGXdMDC2PuRcmZbGO5a/2tbVppW6mfSWG3NPRpgwIDAQAB'; //`MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAw6wDPz05WyzykEqQszzhVFR7o7WFwmOCiJLmNAPr4y2ab7stEe6H6OoRB1GUKAjIW0o/tgIcU25SpFdur6oU7TZKMUbv5vQB66FBcP80Tnbef5By+EQklqUUZYDt2iLYog+Y6RyxkvNHyPPgwJY26ZQed5zkVCcMbzDVMeg5nUtem0BpO0sV/01Zzg93V+Ak5qj10okW/4YXCaZd5g95w1kxSL64AK8LH1u+ewHzg5E+D4ScE9OCTaM+EAHjkZccJEPdxfqVcHzIIDEtvWpFmGZVgBRuMJ/h89j02kIoKj8RtkvX7GgqV9e3hEDs5twWkJzpk+9OIs7g34hd5LBACQIDAQAB`;
+const PUBLIC_KEY = process.env.NEXT_PUBLIC_PAGBANK_PUBLIC_KEY || '';
 
 const N8N_BASE = "https://n8n.boramei.cloud/webhook";
 /** URL real do n8n — usada só pela rota interna /api/checkout (server-side), nunca chamada direto do navegador. */

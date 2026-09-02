@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FileBarChart, TrendingUp, Download } from "lucide-react";
 import FinanceiroTabs from "@/components/FinanceiroTabs";
 import DreChart from "@/components/DreChart";
+import FluxoDiarioChart from "@/components/FluxoDiarioChart";
 import { gerarPdfDre } from "@/lib/pdfDre";
 
 // ─────────────────────────────────────────────────────────────
@@ -63,6 +64,19 @@ interface DreResponse {
   mensal: BlocoDre;
   anual: BlocoDre;
   serieMensal: PontoSerieMensal[];
+}
+
+interface LancamentoResumo {
+  data: string; // YYYY-MM-DD
+  valor: number;
+  natureza: "receita" | "despesa";
+}
+
+/** "2026-09" + dia 30 -> "2026-09-01".."2026-09-30", pra buscar os lançamentos do mês selecionado no seletor. */
+function periodoDoMes(ano: number, mes: number): { inicio: string; fim: string } {
+  const mesStr = String(mes).padStart(2, "0");
+  const ultimoDia = new Date(ano, mes, 0).getDate();
+  return { inicio: `${ano}-${mesStr}-01`, fim: `${ano}-${mesStr}-${String(ultimoDia).padStart(2, "0")}` };
 }
 
 const NOMES_MES = [
@@ -177,6 +191,7 @@ export default function DrePage() {
 
   const [carregando, setCarregando] = useState(true);
   const [dre, setDre] = useState<DreResponse | null>(null);
+  const [lancamentosMes, setLancamentosMes] = useState<LancamentoResumo[]>([]);
   const anoAtual = new Date().getFullYear();
   const [ano, setAno] = useState(anoAtual);
   const [mes, setMes] = useState(new Date().getMonth() + 1);
@@ -186,20 +201,33 @@ export default function DrePage() {
   // desmontado/trocado: se o usuário mudar o mês de novo antes da resposta
   // anterior chegar, essa resposta antiga é descartada em vez de sobrescrever
   // o estado com um período que não é mais o selecionado.
+  //
+  // Além de /api/dre (os totais agregados), busca também /api/lancamentos
+  // no intervalo do mês selecionado — só pra alimentar o gráfico "Lançamentos
+  // diários" abaixo, que precisa do detalhe dia a dia (a DRE só devolve
+  // totais por grupo/categoria, nunca por dia).
   useEffect(() => {
     let cancelado = false;
 
     (async () => {
       setCarregando(true);
-      const res = await fetch(`/api/dre?ano=${ano}&mes=${mes}`);
-      if (res.status === 401) {
+      const { inicio, fim } = periodoDoMes(ano, mes);
+      const [resDre, resLancamentos] = await Promise.all([
+        fetch(`/api/dre?ano=${ano}&mes=${mes}`),
+        fetch(`/api/lancamentos?inicio=${inicio}&fim=${fim}`),
+      ]);
+
+      if (resDre.status === 401 || resLancamentos.status === 401) {
         router.push("/login");
         return;
       }
-      const data: DreResponse = await res.json();
+
+      const data: DreResponse = await resDre.json();
+      const dataLancamentos: { lancamentos: LancamentoResumo[] } = await resLancamentos.json();
       if (cancelado) return;
 
       setDre(data);
+      setLancamentosMes(dataLancamentos.lancamentos);
       setCarregando(false);
     })();
 
@@ -289,9 +317,15 @@ export default function DrePage() {
           </div>
         </section>
 
+        {/* Gráfico: entradas, saídas e saldo dia a dia do mês selecionado no seletor acima */}
+        <section className="mb-8 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+          <h2 className="mb-1 text-sm font-semibold text-[#111827]">Lançamentos diários — {dre.periodo.mesLabel}</h2>
+          <FluxoDiarioChart itens={lancamentosMes} periodo={periodoDoMes(ano, mes)} />
+        </section>
+
         {/* Gráfico: receitas, gastos e lucro líquido ao longo do ano */}
         <section className="mb-8 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
-          <h2 className="mb-1 text-sm font-semibold text-[#111827]">Evolução no ano</h2>
+          <h2 className="mb-1 text-sm font-semibold text-[#111827]">Evolução no ano — {ano}</h2>
           <DreChart serie={dre.serieMensal} />
         </section>
 

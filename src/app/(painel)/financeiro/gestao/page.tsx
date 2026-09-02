@@ -9,12 +9,18 @@ import GestaoChart from "@/components/GestaoChart";
 // ─────────────────────────────────────────────────────────────
 // /financeiro/gestao — "Como está minha empresa?"
 //
-// Dados de indicadores/meta vêm de GET /api/gestao (sem seletor de período:
-// sempre mês atual + ano corrente, igual ao Fluxo de Caixa). A calculadora
-// de Precificação é 100% local (não bate em nenhuma API).
+// Dados de indicadores/meta vêm de GET /api/gestao?ano=&mes= — mesmo
+// seletor de Mês/Ano da DRE (ver src/app/(painel)/financeiro/dre/page.tsx).
+// A calculadora de Precificação é 100% local (não bate em nenhuma API).
 // ─────────────────────────────────────────────────────────────
 
+const NOMES_MES = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+];
+
 interface GestaoResponse {
+  periodo: { ano: number; mes: number; mesLabel: string };
   receita: number;
   custos: number;
   lucroEstimado: number;
@@ -43,6 +49,10 @@ export default function GestaoPage() {
   const [gestao, setGestao] = useState<GestaoResponse | null>(null);
   const [erro, setErro] = useState<string | null>(null);
 
+  const anoAtual = new Date().getFullYear();
+  const [ano, setAno] = useState(anoAtual);
+  const [mes, setMes] = useState(new Date().getMonth() + 1);
+
   const [metaInput, setMetaInput] = useState("");
   const [editandoMeta, setEditandoMeta] = useState(false);
   const [salvandoMeta, setSalvandoMeta] = useState(false);
@@ -51,7 +61,7 @@ export default function GestaoPage() {
   const [margemInput, setMargemInput] = useState("");
 
   const carregarGestao = useCallback(async (): Promise<boolean> => {
-    const res = await fetch("/api/gestao");
+    const res = await fetch(`/api/gestao?ano=${ano}&mes=${mes}`);
     if (res.status === 401) {
       router.push("/login");
       return false;
@@ -66,12 +76,16 @@ export default function GestaoPage() {
     setGestao(data);
     setErro(null);
     return true;
-  }, [router]);
+  }, [ano, mes, router]);
 
+  // Refaz a busca sempre que o seletor de Mês/Ano muda — mesmo padrão de
+  // `cancelado` da DRE, pra uma resposta atrasada de um período antigo não
+  // sobrescrever o estado depois que o usuário já trocou de novo.
   useEffect(() => {
     let cancelado = false;
 
     (async () => {
+      setCarregando(true);
       const ok = await carregarGestao();
       if (!cancelado) setCarregando(false);
       if (!ok) return;
@@ -153,6 +167,32 @@ export default function GestaoPage() {
       </header>
 
       <FinanceiroTabs />
+
+      {/* Seletor de período */}
+      <div className="mb-6 flex flex-wrap gap-3">
+        <select
+          value={mes}
+          onChange={(e) => setMes(Number(e.target.value))}
+          className="h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none transition focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/20"
+        >
+          {NOMES_MES.map((nome, i) => (
+            <option key={nome} value={i + 1}>
+              {nome}
+            </option>
+          ))}
+        </select>
+        <select
+          value={ano}
+          onChange={(e) => setAno(Number(e.target.value))}
+          className="h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none transition focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/20"
+        >
+          {[anoAtual - 1, anoAtual, anoAtual + 1].map((a) => (
+            <option key={a} value={a}>
+              {a}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {/* Indicadores simples */}
       <section className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2">

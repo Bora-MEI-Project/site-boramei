@@ -264,15 +264,24 @@ Sem lançamentos no período → todos os totais vêm `0` e os arrays de linha v
 
 ## `GET /api/gestao`
 
-Indicadores da aba "Gestão" (`/financeiro/gestao`): Receita, Custos, Lucro estimado, Margem, Ponto de Equilíbrio, Projeção anual, Distância do limite do MEI e progresso da Meta de faturamento. Ao contrário de `/api/dre`, **não tem seletor de período** — sempre calcula com base no mês atual (dia 1 até hoje) e no ano corrente (1º de janeiro até hoje), igual ao Fluxo de Caixa.
+Indicadores da aba "Gestão" (`/financeiro/gestao`): Receita, Custos, Lucro estimado, Margem, Ponto de Equilíbrio, Projeção anual, Distância do limite do MEI e progresso da Meta de faturamento.
 
-**Query:** nenhuma.
+### Query params (opcionais)
+
+| Param | Formato | Default |
+|---|---|---|
+| `ano` | inteiro (2000–2100) | ano atual |
+| `mes` | inteiro (1–12) | mês atual |
+
+Mesmo padrão da DRE: um valor fora da faixa é ignorado silenciosamente (nunca 400). Os indicadores "do mês" (`receita`, `custos`, `lucroEstimado`, `margem`, `pontoEquilibrio`) são sempre do mês/ano selecionado — se for o mês real em andamento, o cálculo vai só até hoje; qualquer outro mês (passado, ou futuro dentro do próprio ano) usa o mês fechado inteiro. Já `projecaoAnual`, `distanciaLimiteMei`, `projecaoUltrapassaLimite` e `serieMensal` são sobre o **ano** selecionado — se for o ano corrente, "meses conhecidos" segue o mês real de hoje (não o `mes` escolhido); se for um ano passado, os 12 meses já são histórico e nada é projetado.
+
+**Exemplo:** `GET /api/gestao?ano=2026&mes=8`
 
 ### Resposta — 200
 
 ```json
 {
-  "periodo": { "inicioMes": "2026-08-01", "inicioAno": "2026-01-01", "hoje": "2026-08-27" },
+  "periodo": { "ano": 2026, "mes": 8, "mesLabel": "Agosto de 2026" },
   "receita": 2500,
   "custos": 900,
   "lucroEstimado": 1600,
@@ -296,18 +305,20 @@ Indicadores da aba "Gestão" (`/financeiro/gestao`): Receita, Custos, Lucro esti
 
 | Campo | Tipo | Descrição |
 |---|---|---|
-| `receita` / `custos` | `number` | soma do mês atual, por `natureza` (inclui toda `natureza='receita'`, não só faturamento — ver `serieMensal` abaixo) |
+| `periodo.mesLabel` | `string` | ex.: `"Agosto de 2026"`, igual ao formato usado na DRE |
+| `receita` / `custos` | `number` | soma do mês/ano selecionado (`periodo`), por `natureza` (inclui toda `natureza='receita'`, não só faturamento — ver `serieMensal` abaixo) |
 | `lucroEstimado` | `number` | `receita - custos` |
 | `margem` | `number` | `lucroEstimado/receita*100` (0 se `receita` for 0) |
 | `pontoEquilibrio` | `number \| null` | `despesasFixas / (1 - custosVariaveis/receita)`; `null` se `receita` for 0 ou `custosVariaveis >= receita` (indeterminado) |
 | `temCategoriaNaoClassificada` | `boolean` | `true` se houve gasto em alguma categoria sem `tipo_custo` definido — essas contam como fixas no cálculo acima |
-| `projecaoAnual` | `number` | `receitaAnoAcumulada / mêsAtual * 12` |
+| `projecaoAnual` | `number` | `receitaAnoAcumulada / mesesConhecidos * 12` — `mesesConhecidos` é o mês real atual se `ano` selecionado for o ano corrente, ou `12` se for um ano passado |
 | `limiteMeiAnual` | `number` | constante `81000`, sem proporcionalidade por mês de abertura |
+| `receitaAnoAcumulada` | `number` | soma de `natureza='receita'` no **ano** selecionado, até hoje (ano corrente) ou o ano inteiro (ano passado) |
 | `distanciaLimiteMei` | `number` | `limiteMeiAnual - receitaAnoAcumulada` (pode ser negativo, se já ultrapassou) |
 | `projecaoUltrapassaLimite` | `boolean` | `projecaoAnual > limiteMeiAnual` |
 | `metaFaturamentoMensal` | `number \| null` | valor salvo em `/api/metas`, `null` se o usuário nunca definiu |
 | `progressoMetaPercent` | `number \| null` | `receita/metaFaturamentoMensal*100`, `null` se não há meta definida |
-| `serieMensal` | array (12 itens, Jan–Dez) | base do gráfico "Previsão de faturamento" — barras sobrepostas de **faturamento** (só grupo `Receitas Diretas`, mais estrito que `receita` acima, que também soma Outras Entradas/Receitas Indiretas). `realizado` = faturamento de fato lançado naquele mês (`0` em meses futuros, parcial no mês corrente). `projecao` = média de faturamento mensal do ano (`faturamentoAnoAcumulado / mêsAtual`) para o mês atual em diante; `0` em meses já fechados (não se projeta o que já passou) |
+| `serieMensal` | array (12 itens, Jan–Dez, do **ano** selecionado) | base do gráfico "Previsão de faturamento" — barras sobrepostas de **faturamento** (só grupo `Receitas Diretas`, mais estrito que `receita` acima, que também soma Outras Entradas/Receitas Indiretas). `realizado` = faturamento de fato lançado naquele mês. `projecao` = média de faturamento mensal (`faturamentoAnoAcumulado / mesesConhecidos`) a partir do mês real atual — sempre `0` em ano passado (os 12 meses já são história) |
 
 ### Erros
 

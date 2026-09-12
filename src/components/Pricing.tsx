@@ -99,7 +99,11 @@ export default function Pricing() {
 
               {/* CARD 1: ESSENCIAL */}
               <div className="w-full shrink-0 lg:w-[350px] px-2 lg:px-0">
-                <div className="flex flex-col min-h-[600px] p-8 rounded-3xl border-2 border-brand-green bg-white text-center">
+                <div className="flex flex-col min-h-[600px] p-8 rounded-3xl border-2 border-brand-green bg-white text-center relative">
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-green text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider whitespace-nowrap">
+                    Teste de 3 meses
+                  </div>
+
                   <h3 className="text-3xl font-bold text-gray-900 mb-2">Essencial</h3>
                   <div className="flex items-baseline justify-center gap-1 mb-8">
                     <span className="text-3xl font-bold text-gray-900">R$</span>

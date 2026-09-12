@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { LayoutDashboard, Phone, Mail, IdCard, TrendingUp } from "lucide-react";
+import { LayoutDashboard, Phone, Mail, IdCard, TrendingUp, LogOut } from "lucide-react";
 
 interface Perfil {
   nome: string;
@@ -30,6 +30,7 @@ export default function VisaoGeralPage() {
 
   const [carregando, setCarregando] = useState(true);
   const [perfil, setPerfil] = useState<Perfil | null>(null);
+  const [saindo, setSaindo] = useState(false);
 
   useEffect(() => {
     let cancelado = false;
@@ -52,6 +53,20 @@ export default function VisaoGeralPage() {
     };
   }, [router]);
 
+  // Apaga o cookie de sessão no servidor e sai do painel. `replace` em vez de
+  // `push` pra não deixar /user no histórico — o botão "voltar" do navegador
+  // não deve trazer a tela do painel de volta depois de sair.
+  const sair = async (): Promise<void> => {
+    if (saindo) return;
+    setSaindo(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      router.replace("/login");
+    } catch {
+      setSaindo(false);
+    }
+  };
+
   if (carregando || !perfil) {
     return (
       <div className="flex min-h-screen items-center justify-center text-sm text-gray-500">
@@ -60,10 +75,12 @@ export default function VisaoGeralPage() {
     );
   }
 
+  // CNPJ aparece sempre, mesmo sem valor (o MEI pode não ter informado no
+  // checkout) — `valor: null` vira "Não informado" na renderização abaixo.
   const informacoes = [
     { icone: Phone, label: "WhatsApp", valor: formatarTelefone(perfil.whatsapp) },
     { icone: Mail, label: "E-mail", valor: perfil.email },
-    ...(perfil.cnpj ? [{ icone: IdCard, label: "CNPJ", valor: formatarCnpj(perfil.cnpj) }] : []),
+    { icone: IdCard, label: "CNPJ", valor: perfil.cnpj ? formatarCnpj(perfil.cnpj) : null },
   ];
 
   return (
@@ -101,12 +118,28 @@ export default function VisaoGeralPage() {
               </span>
               <div className="min-w-0">
                 <dt className="text-xs text-gray-500">{label}</dt>
-                <dd className="truncate text-sm font-medium text-[#111827]">{valor}</dd>
+                <dd
+                  className={`truncate text-sm ${
+                    valor ? "font-medium text-[#111827]" : "italic text-gray-400"
+                  }`}
+                >
+                  {valor ?? "Não informado"}
+                </dd>
               </div>
             </div>
           ))}
         </dl>
       </section>
+
+      <button
+        type="button"
+        onClick={sair}
+        disabled={saindo}
+        className="mt-6 flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white text-sm font-semibold text-gray-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        <LogOut className="h-4 w-4" />
+        {saindo ? "Saindo..." : "Sair da conta"}
+      </button>
     </div>
   );
 }

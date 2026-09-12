@@ -107,7 +107,7 @@ export default function Pricing() {
                   <h3 className="text-3xl font-bold text-gray-900 mb-2">Essencial</h3>
                   <div className="flex items-baseline justify-center gap-1 mb-8">
                     <span className="text-3xl font-bold text-gray-900">R$</span>
-                    <span className="text-6xl font-extrabold text-gray-900">29,99</span>
+                    <span className="text-6xl font-extrabold text-gray-900">35,90</span>
                     <span className="text-gray-500 font-medium">/mês</span>
                   </div>
 

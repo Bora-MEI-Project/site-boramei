@@ -5,7 +5,7 @@ export const PLANOS = {
   },
   essencial: {
     nome: "Essencial",
-    preco: "29.99",
+    preco: "35.90",
   },
 } as const;
 

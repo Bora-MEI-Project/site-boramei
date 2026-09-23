@@ -8,7 +8,7 @@ export default function Pricing() {
   const [activeCard, setActiveCard] = useState(0);
 
   return (
-    <section className="py-20 bg-white" id="planos">
+    <section className="scroll-mt-20 py-20 bg-white" id="tabela-planos">
       <div className="max-w-6xl mx-auto px-4">
         
         {/* Cabeçalho da Seção */}

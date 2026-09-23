@@ -3,6 +3,7 @@ import Hero from "@/components/Hero";
 import Features from "@/components/Features";
 import MeiInfo from "@/components/MeiInfo";
 import HowItWorks from "@/components/HowItWorks";
+import WhatsappQr from "@/components/WhatsappQr";
 import About from "@/components/About";
 import Pricing from "@/components/Pricing";
 import Footer from "@/components/Footer";
@@ -16,6 +17,7 @@ export default function Home() {
         <Features />
         <MeiInfo />
         <HowItWorks />
+        <WhatsappQr />
         <About />
         <Pricing />
       </main>

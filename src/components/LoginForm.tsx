@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import CriarSenhaModal from "@/components/CriarSenhaModal";
 
 interface LoginResponse {
   sucesso: boolean;
@@ -16,6 +17,7 @@ export default function LoginForm() {
   const [senha, setSenha] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [criarSenhaAberto, setCriarSenhaAberto] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -84,12 +86,29 @@ export default function LoginForm() {
         </button>
       </form>
 
+      <div className="mt-5 border-t border-gray-100 pt-5">
+        <button
+          type="button"
+          onClick={() => setCriarSenhaAberto(true)}
+          className="flex h-10 w-full items-center justify-center gap-1.5 rounded-lg border border-brand-purple/30 bg-brand-purple/5 text-sm font-semibold text-brand-purple transition hover:bg-brand-purple/10 active:scale-[0.98] cursor-pointer"
+        >
+          Já fez o pré-cadastro? Crie sua senha
+        </button>
+      </div>
+
       <p className="mt-5 text-center text-sm text-gray-500">
         Ainda não é assinante?{" "}
         <Link href="/#planos" className="font-medium text-brand-purple hover:underline">
           Conheça os planos
         </Link>
       </p>
+
+      {criarSenhaAberto && (
+        <CriarSenhaModal
+          onClose={() => setCriarSenhaAberto(false)}
+          onSucesso={() => router.push("/user")}
+        />
+      )}
     </div>
   );
 }

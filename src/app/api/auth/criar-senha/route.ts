@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import bcrypt from 'bcryptjs';
 import { pool } from '@/lib/db';
 import { criarTokenSessao, SESSION_COOKIE } from '@/lib/auth';
+import { consumirTentativas, ipDoCliente, limparTentativas, respostaBloqueada } from '@/lib/rateLimit';
 
 interface CriarSenhaBody {
   cpf?: unknown;
@@ -25,8 +26,12 @@ const MENSAGEM_NAO_ENCONTRADO =
 
 const MENSAGEM_SENHA_JA_DEFINIDA = 'Sua conta já tem uma senha definida! Faça o Login';
 
-// TODO: aplicar rate limiting neste endpoint (ex.: por IP e/ou por CPF), igual
-// ao /api/auth/login, antes de ir para produção.
+// Limites por janela de 10 minutos, mais apertados que os do login: aqui não
+// existe motivo legítimo para repetir o formulário muitas vezes, e cada
+// tentativa é um palpite de par CPF + e-mail.
+const LIMITE_POR_IP = 10;
+const LIMITE_POR_CPF = 5;
+
 /**
  * Define a senha de um usuário que veio do pré-cadastro (checkout/n8n) e ainda
  * não tem senha_hash. Só funciona uma vez por conta: se a senha já existe, o
@@ -56,6 +61,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       { sucesso: false, mensagem: `A senha deve ter pelo menos ${SENHA_MIN_LENGTH} caracteres.` },
       { status: 400 }
     );
+  }
+
+  // Antes da consulta e do bcrypt: é o custo que o atacante quer gastar do
+  // servidor enquanto varre pares de CPF + e-mail.
+  const ip = ipDoCliente(request);
+  const regras = [{ chave: `criar-senha:cpf:${cpf}`, limite: LIMITE_POR_CPF }];
+  if (ip) regras.push({ chave: `criar-senha:ip:${ip}`, limite: LIMITE_POR_IP });
+
+  const chaves = regras.map((regra) => regra.chave);
+  const limite = await consumirTentativas(regras);
+  if (limite.bloqueado) {
+    const { corpo, init } = respostaBloqueada(limite.esperarSegundos);
+    return NextResponse.json(corpo, init);
   }
 
   // O CPF é gravado em formatos diferentes conforme a origem do cadastro, por
@@ -99,6 +117,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       { status: 409 }
     );
   }
+
+  await limparTentativas(chaves);
 
   const token = await criarTokenSessao(usuario.id);
   const cookieStore = await cookies();

@@ -80,7 +80,7 @@ export default function Pricing() {
                     </li>
                     <li className="flex items-start gap-3 text-gray-400 text-left">
                       <span className="mt-0.5">○</span>
-                      <span className="text-base">Gerar um Certificado Digital (Precisa CNH Digital)</span>
+                      <span className="text-base">Oferecemos um Certificado Digital a preço acessivel(Precisa CNH Digital)</span>
                     </li>
                     <li className="flex items-start gap-3 text-gray-400 text-left">
                       <span className="mt-0.5">○</span>

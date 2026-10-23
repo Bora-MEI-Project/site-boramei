@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import bcrypt from 'bcryptjs';
 import { pool } from '@/lib/db';
 import { criarTokenSessao, SESSION_COOKIE } from '@/lib/auth';
+import { consumirTentativas, ipDoCliente, limparTentativas, respostaBloqueada } from '@/lib/rateLimit';
 
 interface LoginRequestBody {
   email: string;
@@ -17,8 +18,12 @@ interface UsuarioAuthRow {
 const MENSAGEM_CREDENCIAIS_INVALIDAS = 'Email ou senha inválidos.';
 const SESSION_MAX_AGE_SEGUNDOS = 60 * 60 * 24 * 7; // 7 dias
 
-// TODO: aplicar rate limiting neste endpoint (ex.: por IP e/ou por e-mail)
-// para dificultar ataques de força bruta antes de ir para produção.
+// Limites por janela de 10 minutos. O teto por IP é mais folgado porque vários
+// assinantes podem sair do mesmo IP; o teto por e-mail é o que efetivamente
+// trava a força bruta contra uma conta específica.
+const LIMITE_POR_IP = 20;
+const LIMITE_POR_EMAIL = 8;
+
 export async function POST(request: NextRequest): Promise<NextResponse> {
   let body: LoginRequestBody;
   try {
@@ -32,6 +37,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   if (!email || typeof senha !== 'string') {
     return NextResponse.json({ sucesso: false, mensagem: MENSAGEM_CREDENCIAIS_INVALIDAS }, { status: 401 });
+  }
+
+  // Antes da consulta e do bcrypt, que são justamente o custo que o atacante
+  // quer gastar do servidor a cada tentativa.
+  const ip = ipDoCliente(request);
+  const regras = [{ chave: `login:email:${email}`, limite: LIMITE_POR_EMAIL }];
+  if (ip) regras.push({ chave: `login:ip:${ip}`, limite: LIMITE_POR_IP });
+
+  const chaves = regras.map((regra) => regra.chave);
+  const limite = await consumirTentativas(regras);
+  if (limite.bloqueado) {
+    const { corpo, init } = respostaBloqueada(limite.esperarSegundos);
+    return NextResponse.json(corpo, init);
   }
 
   const resultado = await pool.query<UsuarioAuthRow>(
@@ -49,6 +67,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (!senhaCorreta) {
     return NextResponse.json({ sucesso: false, mensagem: MENSAGEM_CREDENCIAIS_INVALIDAS }, { status: 401 });
   }
+
+  await limparTentativas(chaves);
 
   const token = await criarTokenSessao(usuario.id);
   const cookieStore = await cookies();

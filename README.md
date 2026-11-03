@@ -1,40 +1,31 @@
-<<<<<<< HEAD
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# site-boramei
 
-## Getting Started
+Site e área do cliente do BoraMEI — Next.js (App Router), TypeScript, Tailwind CSS e Postgres (schema `bora_mei_core`).
 
-First, run the development server:
+## Rodando localmente
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Variáveis de ambiente (`.env`, fora do git): `DATABASE_URL`, `JWT_SECRET`, `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `NEXT_PUBLIC_PAGBANK_PUBLIC_KEY`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Banco de dados
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+As mudanças de estrutura ficam em `migrations/` (`NNNN_descricao.sql`) e são aplicadas por `scripts/migrate.mjs`:
 
-## Learn More
+- em produção, automaticamente a cada `npm start` (deploy no Easypanel), antes do site subir;
+- localmente, com `npm run db:migrate`.
 
-To learn more about Next.js, take a look at the following resources:
+Nunca edite uma migration que já rodou — crie uma nova com a correção.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Estrutura
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `src/app/` — páginas e rotas de API (`/api/*`)
+- `src/app/(painel)/` — área do cliente (visão geral, financeiro, segurança)
+- `src/app/admin/` — dashboard administrativo (acesso pela allowlist em `src/lib/adminAuth.ts`)
+- `src/lib/` — banco, autenticação, pagamentos, campanhas
+- `docs/` — contratos das APIs internas
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-=======
-# site-boramei
->>>>>>> 4869d8f4ab62c40f72a3d028b9220aa1d4a1406e
+Pagamentos e cadastro passam pelos workflows do n8n (`n8n.boramei.cloud`).

@@ -24,7 +24,11 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="pt-BR"
+      // Extensões do navegador (modo escuro, tradutor...) injetam atributos no
+      // <html> antes do React hidratar — ex.: style="filter: none". Isso só
+      // silencia diferenças de atributo nesta tag, não no resto da página.
+      suppressHydrationWarning
       className={`scroll-smooth ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>

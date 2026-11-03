@@ -3,34 +3,60 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Wallet, ShieldCheck, Menu, X } from "lucide-react";
+import { LayoutDashboard, Wallet, ShieldCheck, Users, Tags, Menu, X } from "lucide-react";
 
-const ITENS = [
-  { href: "/user", label: "Visão Geral", icon: LayoutDashboard },
-  { href: "/financeiro", label: "Financeiro", icon: Wallet },
-  { href: "/seguranca", label: "Segurança", icon: ShieldCheck },
-];
+// A variante é passada como string (e não a lista de itens) porque o layout
+// que renderiza a Sidebar é um Server Component, e os ícones do lucide são
+// funções — não podem atravessar a fronteira servidor → cliente como props.
+const VARIANTES = {
+  cliente: {
+    inicio: "/user",
+    itens: [
+      { href: "/user", label: "Visão Geral", icon: LayoutDashboard },
+      { href: "/financeiro", label: "Financeiro", icon: Wallet },
+      { href: "/seguranca", label: "Segurança", icon: ShieldCheck },
+    ],
+  },
+  admin: {
+    inicio: "/admin",
+    itens: [
+      { href: "/admin", label: "Visão Geral", icon: LayoutDashboard },
+      { href: "/admin/usuarios", label: "Usuários", icon: Users },
+      { href: "/admin/categorias", label: "Categorias", icon: Tags },
+    ],
+  },
+};
 
-/** "/user" só ativa em match exato; os demais também ativam em sub-rotas (ex.: /financeiro/dre). */
-function itemAtivo(pathname: string, href: string): boolean {
-  return href === "/user" ? pathname === href : pathname.startsWith(href);
+type Variante = keyof typeof VARIANTES;
+
+/** A página inicial da variante só ativa em match exato; os demais também ativam em sub-rotas (ex.: /financeiro/dre). */
+function itemAtivo(pathname: string, href: string, inicio: string): boolean {
+  return href === inicio ? pathname === href : pathname.startsWith(href);
 }
 
 interface ConteudoProps {
   pathname: string;
+  variante: Variante;
   onNavigate?: () => void;
 }
 
-function Conteudo({ pathname, onNavigate }: ConteudoProps) {
+function Conteudo({ pathname, variante, onNavigate }: ConteudoProps) {
+  const { inicio, itens } = VARIANTES[variante];
+
   return (
     <>
-      <Link href="/user" onClick={onNavigate} className="mb-8 flex items-center px-2">
+      <Link href={inicio} onClick={onNavigate} className="mb-8 flex items-center gap-2 px-2">
         <img src="/logo-com-nome.svg" alt="BoraMEI" className="h-8 w-auto" />
+        {variante === "admin" && (
+          <span className="rounded-md bg-brand-purple/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-purple">
+            Admin
+          </span>
+        )}
       </Link>
 
       <nav className="flex flex-col gap-1">
-        {ITENS.map(({ href, label, icon: Icon }) => {
-          const ativo = itemAtivo(pathname, href);
+        {itens.map(({ href, label, icon: Icon }) => {
+          const ativo = itemAtivo(pathname, href, inicio);
           return (
             <Link
               key={href}
@@ -52,7 +78,7 @@ function Conteudo({ pathname, onNavigate }: ConteudoProps) {
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({ variante = "cliente" }: { variante?: Variante }) {
   const pathname = usePathname();
   const [aberto, setAberto] = useState(false);
 
@@ -60,7 +86,7 @@ export default function Sidebar() {
     <>
       {/* Sidebar fixa — desktop */}
       <aside className="hidden md:sticky md:top-0 md:flex md:h-screen md:w-60 md:shrink-0 md:flex-col md:border-r md:border-gray-200 md:bg-white md:px-3 md:py-6">
-        <Conteudo pathname={pathname} />
+        <Conteudo pathname={pathname} variante={variante} />
       </aside>
 
       {/* Botão flutuante que abre o menu — mobile */}
@@ -90,7 +116,7 @@ export default function Sidebar() {
             >
               <X className="h-4 w-4" />
             </button>
-            <Conteudo pathname={pathname} onNavigate={() => setAberto(false)} />
+            <Conteudo pathname={pathname} variante={variante} onNavigate={() => setAberto(false)} />
           </div>
         </div>
       )}

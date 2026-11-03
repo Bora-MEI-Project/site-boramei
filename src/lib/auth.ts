@@ -31,7 +31,15 @@ export async function criarTokenSessao(usuarioId: number): Promise<string> {
  * (ex.: /api/lancamentos, /api/categorias) para filtrar dados por usuário.
  */
 export async function getUsuarioLogado(request: NextRequest): Promise<SessaoUsuario | null> {
-  const token = request.cookies.get(SESSION_COOKIE)?.value;
+  return verificarTokenSessao(request.cookies.get(SESSION_COOKIE)?.value);
+}
+
+/**
+ * Valida o JWT de sessão já extraído do cookie. Separado de getUsuarioLogado
+ * para servir também aos Server Components, que leem o cookie via cookies()
+ * do next/headers em vez de receber um NextRequest (ver src/lib/dal.ts).
+ */
+export async function verificarTokenSessao(token: string | undefined): Promise<SessaoUsuario | null> {
   if (!token) return null;
 
   try {

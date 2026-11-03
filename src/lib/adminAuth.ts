@@ -6,7 +6,7 @@ import { query } from "./db";
  * admin no banco — é uma allowlist simples, suficiente enquanto só o dono do
  * BoraMEI acessa essas telas.
  */
-const ADMIN_EMAILS = ["contato@boramei.cloud"];
+const ADMIN_EMAILS = ["lucasandrade16.2006@gmail.com"];
 
 interface EmailRow {
   email: string;

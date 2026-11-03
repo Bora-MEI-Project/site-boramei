@@ -6,10 +6,10 @@ import { useRouter } from "next/navigation";
 // ─────────────────────────────────────────────────────────────
 // /admin/categorias — tela interna, só para o dono do BoraMEI.
 // Classifica cada categoria de despesa como fixo/variável (usado no cálculo
-// de Ponto de Equilíbrio da aba Gestão, /financeiro/gestao). Não é linkada
-// em nenhum lugar do painel do cliente — acesso só pela URL direta, e
-// mesmo assim só quem tem o e-mail na allowlist de src/lib/adminAuth.ts
-// consegue ver os dados (checagem feita nas rotas /api/admin/categorias).
+// de Ponto de Equilíbrio da aba Gestão, /financeiro/gestao). Fica no menu do
+// admin (src/app/admin/layout.tsx), que só renderiza para quem tem o e-mail
+// na allowlist de src/lib/adminAuth.ts — e os dados em si também são
+// protegidos pela mesma checagem nas rotas /api/admin/categorias.
 // ─────────────────────────────────────────────────────────────
 
 type Natureza = "receita" | "despesa";
@@ -103,7 +103,7 @@ export default function AdminCategoriasPage() {
   const grupos = Array.from(new Set(despesas.map((c) => c.grupo)));
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10">
+    <div className="mx-auto max-w-2xl px-4 pb-8 pt-20 sm:px-6 sm:pb-10 md:pt-10">
       <h1 className="mb-1 text-xl font-bold text-gray-900">Classificação de custos</h1>
       <p className="mb-8 text-sm text-gray-500">
         Marca cada categoria de despesa como fixa ou variável. Usado no cálculo de

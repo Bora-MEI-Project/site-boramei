@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# backups locais dos workflows do n8n (podem conter tokens)
+n8n-backup/

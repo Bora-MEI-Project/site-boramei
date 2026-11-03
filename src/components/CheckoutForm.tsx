@@ -8,6 +8,7 @@ import Modal from "./Modal";
 import TermosContent from "./TermosContent";
 import PrivacidadeContent from "./PrivacidadeContent";
 import { processarCheckout, aguardarPagamento } from "@/lib/pagamentos";
+import type { CampanhaCheckout } from "@/lib/campanhas";
 import { gerarQrCodeDataUrl } from "@/lib/qrcode";
 import { obterPlano, PLANOS } from "@/lib/planos";
 
@@ -33,12 +34,18 @@ function intervaloPixMs(decorridoMs: number): number {
   return 20000;
 }
 
-export default function CheckoutForm() {
+interface CheckoutFormProps {
+  /** Campanha do ?cupom=, já validada no servidor (src/app/checkout/page.tsx). Só para exibir — o /api/checkout valida de novo. */
+  campanha: CampanhaCheckout | null;
+}
+
+export default function CheckoutForm({ campanha }: CheckoutFormProps) {
   const searchParams = useSearchParams();
   const plano = obterPlano(searchParams.get("plano"));
 
   const preco = PLANOS[plano].preco;
   const precoExibicao = preco.replace(".", ",");
+  const semTrial = campanha?.trialDias === 0;
   
   // Estados do Formulário
   const [metodoPagamento, setMetodoPagamento] = useState<"cartao" | "pix">("cartao");
@@ -303,6 +310,7 @@ export default function CheckoutForm() {
       metodo: metodoPagamento,
       turnstileToken,
       senha,
+      cupom: campanha?.codigo,
       cliente: {
         nome: name,
         email,
@@ -722,7 +730,9 @@ export default function CheckoutForm() {
               {/* Aviso de cobrança, visível no momento da compra */}
               <p className="text-xs text-gray-500 text-center">
                 {metodoPagamento === "cartao"
-                  ? `Teste grátis de 90 dias disponível apenas no cartão de crédito. Assinatura mensal de R$ ${precoExibicao}, com a primeira cobrança no dia 91 e renovação automática. Cancele quando quiser.`
+                  ? semTrial
+                    ? `Assinatura mensal de R$ ${precoExibicao}, com a primeira cobrança hoje e renovação automática. Cancele quando quiser.`
+                    : `Teste grátis de 90 dias disponível apenas no cartão de crédito. Assinatura mensal de R$ ${precoExibicao}, com a primeira cobrança no dia 91 e renovação automática. Cancele quando quiser.`
                   : `Pagamento via PIX de R$ ${precoExibicao} referente ao ciclo atual. Sem período de teste e sem renovação automática — vale só para este ciclo.`}
               </p>
 

@@ -51,6 +51,8 @@ export interface ProcessCheckoutParams {
   senha: string;
   cartao?: CartaoData;
   turnstileToken?: string;
+  /** Código do link promocional (?cupom=). Só o código: o efeito dele é decidido no servidor. */
+  cupom?: string;
 }
 
 export type CardStatus = 'aprovado' | 'recusado' | 'analise';
@@ -180,7 +182,8 @@ export async function processarCheckout({
   cliente,
   senha,
   cartao,
-  turnstileToken
+  turnstileToken,
+  cupom
 }: ProcessCheckoutParams): Promise<CheckoutResult> {
   try {
     let cardToken = "";
@@ -199,6 +202,7 @@ export async function processarCheckout({
       metodo,
       turnstileToken,
       senha,
+      ...(cupom && { cupom }),
       cliente: {
         nome: cliente.nome.trim(),
         email: cliente.email.trim(),

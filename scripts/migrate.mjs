@@ -35,7 +35,9 @@ function carregarEnvLocal() {
 }
 
 function checksum(conteudo) {
-  return createHash('sha256').update(conteudo).digest('hex');
+  // Normaliza CRLF -> LF: no Windows o git converte as quebras de linha no
+  // checkout, e o mesmo arquivo não pode ter checksum diferente por isso.
+  return createHash('sha256').update(conteudo.replace(/\r\n/g, '\n')).digest('hex');
 }
 
 async function main() {

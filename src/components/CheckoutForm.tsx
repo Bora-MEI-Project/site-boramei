@@ -69,9 +69,11 @@ export default function CheckoutForm({ campanha }: CheckoutFormProps) {
   // Estados de Controle, Carregamento e PIX
   const [isLoading, setIsLoading] = useState(false);
   const [pixData, setPixData] = useState<{ orderId: string; copiaECola: string; idRec: string; expiraEm: string | null } | null>(null);
-  const [qrCodeImagem, setQrCodeImagem] = useState<string | null>(null);
+  // A imagem fica guardada junto com o copia-e-cola que a gerou: se o Pix mudar ou sumir,
+  // `qrCodeImagem` (derivado abaixo) volta a null sozinho, sem precisar limpar o estado num efeito.
+  const [qrCode, setQrCode] = useState<{ copiaECola: string; imagem: string | null } | null>(null);
   const [pixSegundosRestantes, setPixSegundosRestantes] = useState(PIX_EXPIRACAO_PADRAO_SEGUNDOS);
-  const pixDuracaoTotalRef = useRef(PIX_EXPIRACAO_PADRAO_SEGUNDOS);
+  const [pixDuracaoTotal, setPixDuracaoTotal] = useState(PIX_EXPIRACAO_PADRAO_SEGUNDOS);
   const [pagamentoConfirmado, setPagamentoConfirmado] = useState(false);
   const [pagamentoAnalise, setPagamentoAnalise] = useState(false);
   const [pagamentoErro, setPagamentoErro] = useState<string | null>(null);
@@ -116,26 +118,23 @@ export default function CheckoutForm({ campanha }: CheckoutFormProps) {
 
   // 🖼️ QR CODE: Gera a imagem no navegador a partir do copia-e-cola (a Efí não manda a imagem pronta)
   useEffect(() => {
-    if (!pixData?.copiaECola) {
-      setQrCodeImagem(null);
-      return;
-    }
+    const copiaECola = pixData?.copiaECola;
+    if (!copiaECola) return;
     let ignorar = false;
 
-    gerarQrCodeDataUrl(pixData.copiaECola)
-      .then((dataUrl) => { if (!ignorar) setQrCodeImagem(dataUrl); })
-      .catch(() => { if (!ignorar) setQrCodeImagem(null); });
+    gerarQrCodeDataUrl(copiaECola)
+      .then((dataUrl) => { if (!ignorar) setQrCode({ copiaECola, imagem: dataUrl }); })
+      .catch(() => { if (!ignorar) setQrCode({ copiaECola, imagem: null }); });
 
     return () => { ignorar = true; };
   }, [pixData?.copiaECola]);
 
-  // ⏳ CONTAGEM REGRESSIVA: Atualiza a barrinha com base na expiração real do Pix
+  const qrCodeImagem = pixData && qrCode?.copiaECola === pixData.copiaECola ? qrCode.imagem : null;
+
+  // ⏳ CONTAGEM REGRESSIVA: Atualiza a barrinha com base na expiração real do Pix.
+  // O valor inicial e a duração total são definidos quando o Pix é gerado (em handleSubmit).
   useEffect(() => {
     if (!pixData) return;
-
-    const restanteInicial = segundosAteExpirar(pixData.expiraEm);
-    pixDuracaoTotalRef.current = restanteInicial || PIX_EXPIRACAO_PADRAO_SEGUNDOS;
-    setPixSegundosRestantes(restanteInicial);
 
     const tick = setInterval(() => {
       setPixSegundosRestantes(segundosAteExpirar(pixData.expiraEm));
@@ -341,6 +340,9 @@ export default function CheckoutForm({ campanha }: CheckoutFormProps) {
     }
 
     if (resultado.pixData) {
+      const restanteInicial = segundosAteExpirar(resultado.pixData.expiraEm);
+      setPixSegundosRestantes(restanteInicial);
+      setPixDuracaoTotal(restanteInicial || PIX_EXPIRACAO_PADRAO_SEGUNDOS);
       setPixData(resultado.pixData);
     } else if (resultado.cardStatus === "analise") {
       setPagamentoAnalise(true);
@@ -409,7 +411,7 @@ export default function CheckoutForm({ campanha }: CheckoutFormProps) {
               <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-brand-purple transition-all duration-1000 ease-linear rounded-full"
-                  style={{ width: `${(pixSegundosRestantes / pixDuracaoTotalRef.current) * 100}%` }}
+                  style={{ width: `${(pixSegundosRestantes / pixDuracaoTotal) * 100}%` }}
                 />
               </div>
             </div>

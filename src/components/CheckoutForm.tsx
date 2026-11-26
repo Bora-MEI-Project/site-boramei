@@ -45,7 +45,8 @@ export default function CheckoutForm({ campanha }: CheckoutFormProps) {
 
   const preco = PLANOS[plano].preco;
   const precoExibicao = preco.replace(".", ",");
-  const semTrial = campanha?.trialDias === 0;
+  // Teste grátis só existe por link de campanha; sem cupom, a primeira cobrança é hoje.
+  const trialDias = campanha?.trialDias ?? 0;
   
   // Estados do Formulário
   const [metodoPagamento, setMetodoPagamento] = useState<"cartao" | "pix">("cartao");
@@ -732,9 +733,9 @@ export default function CheckoutForm({ campanha }: CheckoutFormProps) {
               {/* Aviso de cobrança, visível no momento da compra */}
               <p className="text-xs text-gray-500 text-center">
                 {metodoPagamento === "cartao"
-                  ? semTrial
-                    ? `Assinatura mensal de R$ ${precoExibicao}, com a primeira cobrança hoje e renovação automática. Cancele quando quiser.`
-                    : `Teste grátis de 90 dias disponível apenas no cartão de crédito. Assinatura mensal de R$ ${precoExibicao}, com a primeira cobrança no dia 91 e renovação automática. Cancele quando quiser.`
+                  ? trialDias > 0
+                    ? `Teste grátis de ${trialDias} dias disponível apenas no cartão de crédito. Assinatura mensal de R$ ${precoExibicao}, com a primeira cobrança no dia ${trialDias + 1} e renovação automática. Cancele quando quiser.`
+                    : `Assinatura mensal de R$ ${precoExibicao}, com a primeira cobrança hoje e renovação automática. Cancele quando quiser.`
                   : `Pagamento via PIX de R$ ${precoExibicao} referente ao ciclo atual. Sem período de teste e sem renovação automática — vale só para este ciclo.`}
               </p>
 

@@ -114,9 +114,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ sucesso: false, mensagem: cliente }, { status: 400 });
   }
 
-  // O link promocional só traz o código; o efeito (ex.: trial_dias = 0) vem
-  // do banco. Código informado mas inválido é erro — não pode cair calado no
-  // fluxo normal, com trial, se o cliente entrou por um link "sem trial".
+  // O link promocional só traz o código; o efeito (ex.: trial_dias) vem do
+  // banco. Código informado mas inválido é erro — não pode cair calado no
+  // fluxo normal (sem trial) se o cliente entrou por um link de teste grátis.
   const codigoCupom = normalizarCodigoCampanha(body.cupom);
   const campanha = codigoCupom ? await buscarCampanhaValida(codigoCupom, plano) : null;
   if (codigoCupom && !campanha) {
@@ -145,7 +145,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         cpfTitular: body.cpfTitular,
         idempotencyKey: body.idempotencyKey,
       }),
-      ...(campanha && { cupom: campanha.codigo, trial_dias: campanha.trialDias }),
+      // Sem cupom não há teste grátis: cobra na hora. O trial só existe por link de campanha
+      // (ex.: ?cupom=TESTE90); trial_dias vai sempre, para o n8n nunca decidir sozinho.
+      trial_dias: campanha ? campanha.trialDias : 0,
+      ...(campanha && { cupom: campanha.codigo }),
     }),
   });
 

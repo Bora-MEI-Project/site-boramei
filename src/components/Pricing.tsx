@@ -8,7 +8,7 @@ export default function Pricing() {
   const [activeCard, setActiveCard] = useState(0);
 
   return (
-    <section className="scroll-mt-20 py-20 bg-white" id="tabela-planos">
+    <section className="scroll-mt-20 py-20 bg-white" id="planos">
       <div className="max-w-6xl mx-auto px-4">
         
         {/* Cabeçalho da Seção */}
@@ -50,10 +50,6 @@ export default function Pricing() {
               {/* CARD 0: BÁSICO */}
               <div className="w-full shrink-0 lg:w-[350px] px-2 lg:px-0">
                 <div className="flex flex-col min-h-[600px] p-8 rounded-3xl border-2 border-brand-purple/30 shadow-xl shadow-purple-100 relative bg-white text-center">
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-purple text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider whitespace-nowrap">
-                    Teste de 3 meses
-                  </div>
-
                   <h3 className="text-3xl font-bold text-gray-900 mb-2">Básico</h3>
                   <div className="flex items-baseline justify-center gap-1 mb-8">
                     <span className="text-3xl font-bold text-gray-900">R$</span>
@@ -100,10 +96,6 @@ export default function Pricing() {
               {/* CARD 1: ESSENCIAL */}
               <div className="w-full shrink-0 lg:w-[350px] px-2 lg:px-0">
                 <div className="flex flex-col min-h-[600px] p-8 rounded-3xl border-2 border-brand-green bg-white text-center relative">
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-green text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider whitespace-nowrap">
-                    Teste de 3 meses
-                  </div>
-
                   <h3 className="text-3xl font-bold text-gray-900 mb-2">Essencial</h3>
                   <div className="flex items-baseline justify-center gap-1 mb-8">
                     <span className="text-3xl font-bold text-gray-900">R$</span>
@@ -123,6 +115,10 @@ export default function Pricing() {
                     <li className="flex items-start gap-3 text-gray-600 text-left">
                       <span className="text-brand-green mt-0.5">✓</span>
                       <span className="text-base">Emissão de Notas</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-600 text-left">
+                      <span className="text-brand-green mt-0.5">✓</span>
+                      <span className="text-base">Emissão de NF-e</span>
                     </li>
                     <li className="flex items-start gap-3 text-gray-600 text-left">
                       <span className="text-brand-green mt-0.5">✓</span>

@@ -84,11 +84,12 @@ export default function TermosContent() {
 
       <SubSecao numero="4.2" titulo="Período de teste" />
       <p>
-        Podemos oferecer período de teste gratuito ou promocional — atualmente de 90 (noventa) dias para
-        assinaturas pagas no cartão de crédito. Ao escolher cartão como forma de pagamento, a autorização
-        de cobrança é colhida já no momento do cadastro, mas nenhum valor é debitado durante o teste: a
-        primeira cobrança ocorre no <strong>91º dia</strong> contado da contratação, salvo cancelamento
-        anterior. As condições e a duração de cada oferta são informadas no momento da contratação.
+        A contratação padrão não tem período de teste: a primeira cobrança ocorre no momento do cadastro.
+        Podemos oferecer, em links ou condições promocionais específicas, período de teste gratuito para
+        assinaturas pagas no cartão de crédito. Nesse caso, a autorização de cobrança é colhida já no
+        momento do cadastro, mas nenhum valor é debitado durante o teste: a primeira cobrança ocorre no
+        dia seguinte ao fim do período informado, salvo cancelamento anterior. A existência e a duração do
+        teste são informadas no momento da contratação.
       </p>
 
       <SubSecao numero="4.3" titulo="Renovação automática no cartão de crédito" />
@@ -96,8 +97,8 @@ export default function TermosContent() {
         <strong>Atenção:</strong> ao escolher cartão de crédito como forma de pagamento, você contrata uma{" "}
         <strong>assinatura de cobrança recorrente mensal</strong>. A autorização de cobrança é colhida uma
         única vez, no cadastro; a partir daí, o valor do plano é debitado automaticamente no mesmo cartão,
-        todo mês — começando no dia 91 se você estiver em período de teste, ou imediatamente após a
-        confirmação do cadastro caso contrário — sem necessidade de nova autorização, até que você cancele.
+        todo mês — começando imediatamente após a confirmação do cadastro, ou no dia seguinte ao fim do
+        período de teste, se houver — sem necessidade de nova autorização, até que você cancele.
       </div>
       <p>Ao concluir a compra com cartão, você declara estar ciente e de acordo com:</p>
       <ol className="list-decimal pl-5 space-y-1">
